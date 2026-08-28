@@ -1,0 +1,6 @@
+{
+  "name": "Arduino ASM Studio",
+  "description": "Moduláris vizuális programozási és szimulációs környezet AVR (ATmega328P @ 16 MHz) és ESP32 (Xtensa LX6 @ 240 MHz): egyedi nagysebességű Event-Loop szimulációs motor Min-Heap Tick Queue architektúrával (0 polling overhead, 10-20x sebesség), szigorú 2-fázisú ciklus-hű I/O végrehajtással (RMW védelem), előre számolt 64k SREG LUT táblákkal (Zero-Branch O(1) flag kalkuláció), vizuális Állapotgép (FSM) tervezővel és ASM/C generátorral, 1-ciklusos Logikai Analizátorral, és Watchpoint rendszerrel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

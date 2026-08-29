@@ -479,8 +479,11 @@ pub struct AvrCore {
     pub pc: u16,
     pub sp: u8,
     pub sreg: u8,
+    #[wasm_bindgen(skip)]
     pub regs: [u8; 32],
+    #[wasm_bindgen(skip)]
     pub sram: [u8; 2048],
+    #[wasm_bindgen(skip)]
     pub flash: Vec<u16>, // program memory word array
     pub cycles: u64,
     pub temp: u8,        // Hidden TEMP register for 16-bit access

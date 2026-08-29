@@ -36,6 +36,8 @@ import {
   aluAsr,
   aluRor,
   aluSwap,
+  aluMul,
+  aluMuls,
 } from './alu';
 
 export function runAluTests(): { passed: boolean; results: { name: string; passed: boolean; details?: string }[] } {
@@ -196,6 +198,25 @@ export function runAluTests(): { passed: boolean; results: { name: string; passe
     ctx.regs[16] = 0xa5;
     aluSwap(ctx, 16);
     assert('SWAP 0xA5 -> 0x5A', ctx.regs[16] === 0x5a);
+  }
+
+  // 10. MUL / MULS
+  {
+    const ctx = createMockContext();
+    ctx.regs[16] = 3;
+    ctx.regs[17] = 5;
+    aluMul(ctx, 16, 17);
+    assert('MUL 3 * 5 = 15', ctx.regs[0] === 15 && ctx.regs[1] === 0 && (ctx.sreg & FLAG_Z) === 0 && (ctx.sreg & FLAG_C) === 0);
+
+    ctx.regs[16] = 255;
+    ctx.regs[17] = 255;
+    aluMul(ctx, 16, 17);
+    assert('MUL 255 * 255 = 65025', ctx.regs[0] === 0x01 && ctx.regs[1] === 0xFE && (ctx.sreg & FLAG_C) !== 0);
+
+    ctx.regs[16] = 254; // -2
+    ctx.regs[17] = 5;
+    aluMuls(ctx, 16, 17);
+    assert('MULS -2 * 5 = -10', ctx.regs[0] === 0xF6 && ctx.regs[1] === 0xFF && (ctx.sreg & FLAG_C) !== 0);
   }
 
   const allPassed = results.every((r) => r.passed);

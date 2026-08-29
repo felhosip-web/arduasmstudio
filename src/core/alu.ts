@@ -221,6 +221,24 @@ export interface IAluContext {
 }
 
 export class Alu {
+  public static mul(ctx: IAluContext, rd: number, rr: number): number {
+    return aluMul(ctx, rd, rr);
+  }
+  public static muls(ctx: IAluContext, rd: number, rr: number): number {
+    return aluMuls(ctx, rd, rr);
+  }
+  public static mulsu(ctx: IAluContext, rd: number, rr: number): number {
+    return aluMulsu(ctx, rd, rr);
+  }
+  public static fmul(ctx: IAluContext, rd: number, rr: number): number {
+    return aluFmul(ctx, rd, rr);
+  }
+  public static fmuls(ctx: IAluContext, rd: number, rr: number): number {
+    return aluFmuls(ctx, rd, rr);
+  }
+  public static fmulsu(ctx: IAluContext, rd: number, rr: number): number {
+    return aluFmulsu(ctx, rd, rr);
+  }
   public static add(ctx: IAluContext, rd: number, rr: number): number {
     return aluAdd(ctx, rd, rr);
   }
@@ -284,6 +302,68 @@ export class Alu {
   public static swap(ctx: IAluContext, rd: number): number {
     return aluSwap(ctx, rd);
   }
+}
+
+export function aluMul(ctx: IAluContext, rd: number, rr: number): number {
+  const res = ctx.regs[rd] * ctx.regs[rr];
+  ctx.regs[0] = res & 0xff;
+  ctx.regs[1] = (res >> 8) & 0xff;
+  ctx.sreg = (ctx.sreg & ~(FLAG_Z | FLAG_C)) | ((res === 0 ? 1 : 0) << 1) | ((res >> 15) & 1);
+  return ctx.sreg;
+}
+
+export function aluMuls(ctx: IAluContext, rd: number, rr: number): number {
+  const rdVal = (ctx.regs[rd] & 0x80) ? ctx.regs[rd] - 256 : ctx.regs[rd];
+  const rrVal = (ctx.regs[rr] & 0x80) ? ctx.regs[rr] - 256 : ctx.regs[rr];
+  let res = rdVal * rrVal;
+  if (res < 0) res = res + 65536;
+  ctx.regs[0] = res & 0xff;
+  ctx.regs[1] = (res >> 8) & 0xff;
+  ctx.sreg = (ctx.sreg & ~(FLAG_Z | FLAG_C)) | ((res === 0 ? 1 : 0) << 1) | ((res >> 15) & 1);
+  return ctx.sreg;
+}
+
+export function aluMulsu(ctx: IAluContext, rd: number, rr: number): number {
+  const rdVal = (ctx.regs[rd] & 0x80) ? ctx.regs[rd] - 256 : ctx.regs[rd];
+  let res = rdVal * ctx.regs[rr];
+  if (res < 0) res = res + 65536;
+  ctx.regs[0] = res & 0xff;
+  ctx.regs[1] = (res >> 8) & 0xff;
+  ctx.sreg = (ctx.sreg & ~(FLAG_Z | FLAG_C)) | ((res === 0 ? 1 : 0) << 1) | ((res >> 15) & 1);
+  return ctx.sreg;
+}
+
+export function aluFmul(ctx: IAluContext, rd: number, rr: number): number {
+  const res = (ctx.regs[rd] * ctx.regs[rr]) << 1;
+  ctx.regs[0] = res & 0xff;
+  ctx.regs[1] = (res >> 8) & 0xff;
+  ctx.sreg = (ctx.sreg & ~(FLAG_Z | FLAG_C)) | (((res & 0xffff) === 0 ? 1 : 0) << 1) | ((res >> 16) & 1);
+  return ctx.sreg;
+}
+
+export function aluFmuls(ctx: IAluContext, rd: number, rr: number): number {
+  const rdVal = (ctx.regs[rd] & 0x80) ? ctx.regs[rd] - 256 : ctx.regs[rd];
+  const rrVal = (ctx.regs[rr] & 0x80) ? ctx.regs[rr] - 256 : ctx.regs[rr];
+  let res = rdVal * rrVal;
+  const c = (res >> 14) & 1;
+  res = res << 1;
+  if (res < 0) res += 65536;
+  ctx.regs[0] = res & 0xff;
+  ctx.regs[1] = (res >> 8) & 0xff;
+  ctx.sreg = (ctx.sreg & ~(FLAG_Z | FLAG_C)) | (((res & 0xffff) === 0 ? 1 : 0) << 1) | c;
+  return ctx.sreg;
+}
+
+export function aluFmulsu(ctx: IAluContext, rd: number, rr: number): number {
+  const rdVal = (ctx.regs[rd] & 0x80) ? ctx.regs[rd] - 256 : ctx.regs[rd];
+  let res = rdVal * ctx.regs[rr];
+  const c = (res >> 14) & 1;
+  res = res << 1;
+  if (res < 0) res += 65536;
+  ctx.regs[0] = res & 0xff;
+  ctx.regs[1] = (res >> 8) & 0xff;
+  ctx.sreg = (ctx.sreg & ~(FLAG_Z | FLAG_C)) | (((res & 0xffff) === 0 ? 1 : 0) << 1) | c;
+  return ctx.sreg;
 }
 
 export function aluAdd(ctx: IAluContext, rd: number, rr: number): number {

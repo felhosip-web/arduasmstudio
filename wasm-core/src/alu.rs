@@ -336,6 +336,68 @@ pub struct Alu;
 
 impl Alu {
     #[inline(always)]
+    pub fn mul<S: IAluState>(core: &mut S, rd: usize, rr: usize) {
+        let res = (core.get_reg(rd) as u16) * (core.get_reg(rr) as u16);
+        core.set_reg(0, (res & 0xFF) as u8);
+        core.set_reg(1, ((res >> 8) & 0xFF) as u8);
+        let z = if res == 0 { FLAG_Z } else { 0 };
+        let c = if (res & 0x8000) != 0 { FLAG_C } else { 0 };
+        core.set_sreg((core.get_sreg() & !(FLAG_Z | FLAG_C)) | z | c);
+    }
+
+    #[inline(always)]
+    pub fn muls<S: IAluState>(core: &mut S, rd: usize, rr: usize) {
+        let res = (core.get_reg(rd) as i8 as i16) * (core.get_reg(rr) as i8 as i16);
+        core.set_reg(0, (res & 0xFF) as u8);
+        core.set_reg(1, ((res >> 8) & 0xFF) as u8);
+        let z = if res == 0 { FLAG_Z } else { 0 };
+        let c = if ((res as u16) & 0x8000) != 0 { FLAG_C } else { 0 };
+        core.set_sreg((core.get_sreg() & !(FLAG_Z | FLAG_C)) | z | c);
+    }
+
+    #[inline(always)]
+    pub fn mulsu<S: IAluState>(core: &mut S, rd: usize, rr: usize) {
+        let res = (core.get_reg(rd) as i8 as i16) * (core.get_reg(rr) as u16 as i16);
+        core.set_reg(0, (res & 0xFF) as u8);
+        core.set_reg(1, ((res >> 8) & 0xFF) as u8);
+        let z = if res == 0 { FLAG_Z } else { 0 };
+        let c = if ((res as u16) & 0x8000) != 0 { FLAG_C } else { 0 };
+        core.set_sreg((core.get_sreg() & !(FLAG_Z | FLAG_C)) | z | c);
+    }
+
+    #[inline(always)]
+    pub fn fmul<S: IAluState>(core: &mut S, rd: usize, rr: usize) {
+        let res = ((core.get_reg(rd) as u32) * (core.get_reg(rr) as u32)) << 1;
+        core.set_reg(0, (res & 0xFF) as u8);
+        core.set_reg(1, ((res >> 8) & 0xFF) as u8);
+        let z = if (res & 0xFFFF) == 0 { FLAG_Z } else { 0 };
+        let c = if (res & 0x10000) != 0 { FLAG_C } else { 0 };
+        core.set_sreg((core.get_sreg() & !(FLAG_Z | FLAG_C)) | z | c);
+    }
+
+    #[inline(always)]
+    pub fn fmuls<S: IAluState>(core: &mut S, rd: usize, rr: usize) {
+        let raw = (core.get_reg(rd) as i8 as i32) * (core.get_reg(rr) as i8 as i32);
+        let res = raw << 1;
+        core.set_reg(0, (res & 0xFF) as u8);
+        core.set_reg(1, ((res >> 8) & 0xFF) as u8);
+        let z = if (res & 0xFFFF) == 0 { FLAG_Z } else { 0 };
+        let c = if (raw & 0x4000) != 0 { FLAG_C } else { 0 };
+        core.set_sreg((core.get_sreg() & !(FLAG_Z | FLAG_C)) | z | c);
+    }
+
+    #[inline(always)]
+    pub fn fmulsu<S: IAluState>(core: &mut S, rd: usize, rr: usize) {
+        let raw = (core.get_reg(rd) as i8 as i32) * (core.get_reg(rr) as u8 as i32);
+        let res = raw << 1;
+        core.set_reg(0, (res & 0xFF) as u8);
+        core.set_reg(1, ((res >> 8) & 0xFF) as u8);
+        let z = if (res & 0xFFFF) == 0 { FLAG_Z } else { 0 };
+        let c = if (raw & 0x4000) != 0 { FLAG_C } else { 0 };
+        core.set_sreg((core.get_sreg() & !(FLAG_Z | FLAG_C)) | z | c);
+    }
+
+    #[inline(always)]
     pub fn add<S: IAluState>(core: &mut S, rd: usize, rr: usize) {
         let a = core.get_reg(rd) as usize;
         let b = core.get_reg(rr) as usize;
@@ -549,6 +611,19 @@ impl Alu {
 }
 
 // Module-level functions forwarding to Alu (for backwards compatibility)
+#[inline(always)]
+pub fn mul<S: IAluState>(state: &mut S, rd: usize, rr: usize) -> u8 { Alu::mul(state, rd, rr); state.get_sreg() }
+#[inline(always)]
+pub fn muls<S: IAluState>(state: &mut S, rd: usize, rr: usize) -> u8 { Alu::muls(state, rd, rr); state.get_sreg() }
+#[inline(always)]
+pub fn mulsu<S: IAluState>(state: &mut S, rd: usize, rr: usize) -> u8 { Alu::mulsu(state, rd, rr); state.get_sreg() }
+#[inline(always)]
+pub fn fmul<S: IAluState>(state: &mut S, rd: usize, rr: usize) -> u8 { Alu::fmul(state, rd, rr); state.get_sreg() }
+#[inline(always)]
+pub fn fmuls<S: IAluState>(state: &mut S, rd: usize, rr: usize) -> u8 { Alu::fmuls(state, rd, rr); state.get_sreg() }
+#[inline(always)]
+pub fn fmulsu<S: IAluState>(state: &mut S, rd: usize, rr: usize) -> u8 { Alu::fmulsu(state, rd, rr); state.get_sreg() }
+
 #[inline(always)]
 pub fn add<S: IAluState>(state: &mut S, rd: usize, rr: usize) -> u8 {
     Alu::add(state, rd, rr);
@@ -838,5 +913,24 @@ mod tests {
         let sreg2 = sbc(&mut state, 16, 17);
         assert_eq!(state.regs[16], 0x00);
         assert_ne!(sreg2 & FLAG_Z, 0, "Z must be 1 in SBC if previous Z was 1 and res is 0");
+    }
+
+    #[test]
+    fn test_mul() {
+        let mut state = MockAluState::new();
+        state.regs[16] = 3;
+        state.regs[17] = 5;
+        let sreg = super::mul(&mut state, 16, 17);
+        assert_eq!(state.regs[0], 15);
+        assert_eq!(state.regs[1], 0);
+        assert_eq!(sreg & FLAG_Z, 0);
+        assert_eq!(sreg & FLAG_C, 0);
+
+        state.regs[16] = 255;
+        state.regs[17] = 255;
+        let sreg2 = super::mul(&mut state, 16, 17);
+        assert_eq!(state.regs[0], 0x01);
+        assert_eq!(state.regs[1], 0xFE);
+        assert_ne!(sreg2 & FLAG_C, 0);
     }
 }

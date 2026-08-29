@@ -1125,4 +1125,3 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
     </div>
   );
 };
-

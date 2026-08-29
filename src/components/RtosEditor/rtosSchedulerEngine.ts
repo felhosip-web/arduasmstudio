@@ -118,7 +118,7 @@ export function getTaskBlockSteps(task: RtosTaskData, globalBlocks: ProgramBlock
   const sampleBlocks: GanttBlockExecution[] = [];
 
   const taskNameLower = (task.name || '').toLowerCase();
-  
+
   if (taskNameLower.includes('sensor') || taskNameLower.includes('sample') || taskNameLower.includes('adc')) {
     sampleBlocks.push(
       { blockId: 'b_adc', blockType: 'adc_read', blockName: 'ADC Mintavételezés', durationUs: 65, cycles: 1040, description: 'Analóg feszültség olvasás (A0 csatorna)' },
@@ -221,7 +221,7 @@ export function simulateRtosSchedule(
   // Pre-calculate task dependencies from both task data and wire connections
   const taskDependenciesMap: Record<string, string[]> = {};
   const taskDependentsMap: Record<string, string[]> = {};
-  
+
   taskNodes.forEach((node) => {
     taskDependenciesMap[node.id] = [];
     taskDependentsMap[node.id] = [];
@@ -291,7 +291,7 @@ export function simulateRtosSchedule(
     const loopPeriodMs = Math.max(10, data.loopPeriodMs || 50);
     const deps = taskDependenciesMap[node.id] || [];
     const isDependentTask = deps.length > 0;
-    
+
     // Estimate task execution slice duration from cpuPercent or period (typically 3ms - 15ms)
     const execDuration = Math.max(
       2,

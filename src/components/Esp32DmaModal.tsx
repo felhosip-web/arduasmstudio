@@ -445,13 +445,13 @@ static intr_handle_t dma_intr_handle;
 // DMA Megszakításkezelő Rutin (ISR)
 static void IRAM_ATTR dma_transfer_complete_isr(void *arg) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    
+
     // Megszakítás nyugtázása és zászlók törlése
     // ...
-    
+
     // Értesítés küldése a FreeRTOS adatfeldolgozó taszknak
     // vTaskNotifyGiveFromISR(dspTaskHandle, &xHigherPriorityTaskWoken);
-    
+
     if (xHigherPriorityTaskWoken == pdTRUE) {
         portYIELD_FROM_ISR();
     }

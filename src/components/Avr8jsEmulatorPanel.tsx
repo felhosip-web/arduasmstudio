@@ -438,7 +438,7 @@ export const Avr8jsEmulatorPanel: React.FC<Avr8jsEmulatorPanelProps> = ({
           {Array.from({ length: 32 }, (_, i) => {
             const regKey = `r${i}`;
             const val = (cpuSnapshot?.registers[regKey] ?? simulation.registers[regKey] ?? 0) & 0xff;
-            
+
             let displayVal = `0x${val.toString(16).toUpperCase().padStart(2, '0')}`;
             if (regFormat === 'DEC') {
               displayVal = val.toString(10);

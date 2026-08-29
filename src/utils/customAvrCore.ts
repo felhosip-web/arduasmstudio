@@ -1,7 +1,7 @@
 /**
  * (c) 2026 AI Studio AVR Visual Studio
  * High-Performance Event-Driven Custom AVR CPU Engine (ATmega328P @ 16 MHz)
- * 
+ *
  * Key Architectural Innovations:
  * 1. Tick Queue Architecture (Min-Heap Priority Queue):
  *    - Eliminates per-cycle peripheral polling.

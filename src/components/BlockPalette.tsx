@@ -312,4 +312,3 @@ export const BlockPalette: React.FC<BlockPaletteProps> = ({
     </aside>
   );
 };
-

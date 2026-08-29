@@ -1,7 +1,7 @@
 /**
  * (c) 2026 AI Studio AVR8 Engine
  * Hybrid CPU Architecture for Real-Time 16MHz AVR8 Simulation & Debug Fallback
- * 
+ *
  * ARCHITECTURE (hybrid):
  * - Fast path (Real-Time Run Mode): WASM AvrCore / WasmCpu hot loop @ 16+ MIPS.
  *   - Runs in tight loops until next peripheral event in TickQueue.
@@ -149,7 +149,7 @@ export class HybridCpu {
 
   /**
    * Main Execution Method: runs for `ms` milliseconds (16,000 cycles per ms @ 16MHz)
-   * 
+   *
    * Modes:
    * 1. Fallback Pure TS Mode: If cycleAccuratePinTrace or timeTravelEnabled is true.
    * 2. Real-Time Hybrid Mode (WASM Fast Path + JS Event Slow Path).

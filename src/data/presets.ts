@@ -831,4 +831,3 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
     ],
   },
 ];
-

@@ -1146,7 +1146,7 @@ export function executeSimulationStep(
       const text = String(params.text || 'HELLO');
       const hasNl = String(params.addNewline) === 'true';
       const fullText = hasNl ? `${text}\r\n` : text;
-      
+
       if (newUartState) {
         newUartState.terminalText = (newUartState.terminalText || '') + fullText;
         newUartState.txLed = true;
@@ -1606,7 +1606,7 @@ export function executeSimulationStep(
       const i2cAddr = params.i2cAddress || '0x50';
       const addrStr = String(params.memAddress ?? '0x0010');
       const rawAddr = parseInt(addrStr, addrStr.startsWith('0x') ? 16 : 10) || 0;
-      
+
       // Parse data byte
       let byteVal = 0;
       const dataParam = params.dataByte ?? '0x42';

@@ -1303,4 +1303,3 @@ export interface AvrStackMemorySnapshot {
   heapBlocks: AvrHeapBlock[];
   overflowEvent: AvrStackOverflowEvent | null;
 }
-

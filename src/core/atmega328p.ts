@@ -1,7 +1,7 @@
 /**
  * (c) 2026 AI Studio AVR8 Engine
  * ATmega328P Complete Register Map from Datasheet
- * 
+ *
  * Includes:
  * - Full I/O register definitions 0x20..0xFF (mapped to data memory)
  * - Exact readMask / writeMask for reserved & un-writable bits

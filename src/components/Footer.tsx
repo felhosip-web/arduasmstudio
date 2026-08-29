@@ -88,7 +88,7 @@ export const Footer: React.FC<FooterProps> = ({
               loopTimingData.hasProgram ? (isEsp32 ? 'text-sky-400' : 'text-[#4ade80]') : 'text-[#606470]'
             }`}
           />
-          
+
           <span className="text-[11px] font-semibold text-[#8A8D98] whitespace-nowrap">
             Főciklus futásidő:
           </span>

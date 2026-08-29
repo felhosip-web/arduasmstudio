@@ -157,7 +157,7 @@ export const HardwareModulesPanel: React.FC<HardwareModulesPanelProps> = ({
       const delta = direction === 'CW' ? 1 : -1;
       const newPos = (mod.state.position || 0) + delta;
       const newAngle = ((mod.state.angleDeg || 0) + delta * 18) % 360;
-      
+
       // Simulate Quadrature pins CLK / DT on Arduino
       if (onPinChange && mod.pins.CLK && mod.pins.DT) {
         onPinChange(mod.pins.CLK as ArduinoPin, 0);
@@ -1303,7 +1303,7 @@ export const HardwareModulesPanel: React.FC<HardwareModulesPanelProps> = ({
                   <div className="w-48 bg-[#181a20] border-2 border-[#333846] rounded-xs p-2 relative shadow-lg">
                     {/* Notch at Top */}
                     <div className="w-5 h-2 bg-[#0d0f14] border-b border-x border-[#333846] rounded-b-full mx-auto mb-2" />
-                    
+
                     <div className="text-center font-mono text-[11px] font-bold text-slate-300 tracking-wider">
                       AT{activeModule.state.chipModel || '24C256'}
                     </div>

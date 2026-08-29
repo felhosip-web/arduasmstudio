@@ -1,12 +1,12 @@
 /**
  * (c) 2026 AI Studio AVR8 Engine
  * Cycle-Accurate 16-bit Timer/Counter1 Peripheral for ATmega328P and ATtiny85
- * 
+ *
  * ARCHITECTURE RULES:
  * 1. Event-driven: TickQueue min-heap integration with { at: cpuCycles, cb }.
  * 2. Two-phase I/O: 1-cycle write-latch for output compare pin synchronization (OC1A/OC1B).
  * 3. No magic numbers: Explicit WGM, COM, and CS enums based on ATmega328P datasheet Tables 16-4 & 16-5.
- * 
+ *
  * SPEC: Phase and Frequency Correct PWM (WGM Modes 8 and 9)
  * - WGM Mode 8: TOP = ICR1 (not double buffered), OCR1A/B double buffered at BOTTOM.
  *   Hardware Glitch: If ICR1 < TCNT1 is written while counting UP, TCNT1 overflows to 0xFFFF without clamping.

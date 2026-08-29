@@ -712,4 +712,3 @@ export function calculateFreeRtosProfile(
     stackWarning,
   };
 }
-

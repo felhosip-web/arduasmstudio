@@ -1,7 +1,7 @@
 /**
  * (c) 2026 AI Studio AVR8 Engine
  * High-Performance WASM-Accelerated CPU Core & Hybrid JS Peripheral Bridge
- * 
+ *
  * ARCHITECTURE (hybrid):
  * - Fast path (Hot Loop): WASM AvrCore fetch-decode-execute loop @ 16+ MIPS.
  * - Slow path (Peripherals/MMIO): TickQueue min-heap in JS handles Timers, USART, ADC, Interrupts.
@@ -75,7 +75,7 @@ export class WasmCpu {
 
   constructor(maxFlashWords: number = 32768, tickQueue: ITickQueue | null = null) {
     this.tickQueue = tickQueue;
-    
+
     // Allocate 128KB unified linear memory for WASM interop
     const totalBytes = this.FLASH_OFFSET + maxFlashWords * 2;
     this.memoryBuffer = new ArrayBuffer(totalBytes);

@@ -83,11 +83,11 @@ export function generateArduinoConnectivityC(wifi?: Esp32WifiState, ble?: Esp32B
     lines.push('// BLE Advertising & GATT Szerver UUID Definíciók');
     lines.push('// -------------------------------------------------------------');
     lines.push(`#define BLE_DEVICE_NAME   "${ble.deviceName || 'ESP32_BLE'}"`);
-    
+
     const primaryService = ble.services?.[0];
     const srvUuid = primaryService?.uuid || '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
     lines.push(`#define SERVICE_UUID      "${srvUuid}"`);
-    
+
     primaryService?.characteristics?.forEach((char, idx) => {
       lines.push(`#define CHAR_${idx + 1}_UUID        "${char.uuid}" // ${char.name}`);
     });
@@ -109,7 +109,7 @@ export function generateArduinoConnectivityC(wifi?: Esp32WifiState, ble?: Esp32B
 
   // 3. Setup Function
   lines.push('void setupConnectivity() {');
-  
+
   if (hasWifi && wifi) {
     lines.push('  // === 1. WiFi Inicializálás ===');
     if (wifi.hostname) {
@@ -195,7 +195,7 @@ export function generateArduinoConnectivityC(wifi?: Esp32WifiState, ble?: Esp32B
       lines.push('  pServer->setCallbacks(new ServerCallbacks());');
       lines.push('');
       lines.push('  BLEService *pService = pServer->createService(SERVICE_UUID);');
-      
+
       const primaryService = ble.services?.[0];
       primaryService?.characteristics?.forEach((char, idx) => {
         const propFlags: string[] = [];

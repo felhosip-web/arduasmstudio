@@ -7790,4 +7790,3 @@ export const CATEGORY_METADATA: Record<
     badgeColor: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20',
   },
 };
-

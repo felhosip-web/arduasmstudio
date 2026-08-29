@@ -75,7 +75,7 @@ export const BlockPalette: React.FC<BlockPaletteProps> = ({
   return (
     <aside
       id="block-palette"
-      className="w-80 md:w-88 flex flex-col bg-[#161920] border-r border-[#2A2D35] h-full select-none"
+      className="w-full lg:w-80 xl:w-88 flex flex-col bg-[#161920] border-r border-[#2A2D35] h-full select-none"
     >
       {/* Header & MCU Selector */}
       <div className="p-4 border-b border-[#2A2D35] space-y-3">

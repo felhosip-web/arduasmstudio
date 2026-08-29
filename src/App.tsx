@@ -19,6 +19,7 @@ import { TimingProfilerModal } from './components/TimingProfilerModal';
 import { StateMachineModal } from './components/StateMachineModal';
 import { LogicAnalyzerModal } from './components/LogicAnalyzerModal';
 import { VirtualWiringModal } from './components/VirtualWiringModal';
+import { AbiSymbiosisModal } from './components/AbiSymbiosisModal';
 import { FloatingAvrInfoPanel } from './components/FloatingAvrInfoPanel';
 import { AvrFuseModal } from './components/AvrFuseModal';
 import { AvrInterruptModal } from './components/AvrInterruptModal';
@@ -91,6 +92,8 @@ export default function App() {
   const [isMemoryEditorOpen, setIsMemoryEditorOpen] = useState<boolean>(false);
   const [isRenderEngineOpen, setIsRenderEngineOpen] = useState<boolean>(false);
   const [isReverseEngineOpen, setIsReverseEngineOpen] = useState<boolean>(false);
+  const [isMobilePaletteOpen, setIsMobilePaletteOpen] = useState<boolean>(false);
+  const [isAbiModalOpen, setIsAbiModalOpen] = useState<boolean>(false);
 
   // Render Engine & Mini-OS Config
   const [renderConfig, setRenderConfig] = useState<RenderEngineConfig>(() => loadRenderEngineConfig());
@@ -652,7 +655,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#0F1115] text-[#E0E0E6] overflow-hidden font-sans">
+    <div className="flex flex-col w-full h-full absolute inset-0 bg-[#0F1115] text-[#E0E0E6] overflow-hidden font-sans">
       {/* Top Navigation & Action Header */}
       <Header
         blocks={blocks}
@@ -685,6 +688,7 @@ export default function App() {
         variables={variables}
         onOpenRenderEngine={() => setIsRenderEngineOpen(true)}
         onOpenReverseEngine={() => setIsReverseEngineOpen(true)}
+        onOpenAbiModal={() => setIsAbiModalOpen(true)}
         renderConfig={renderConfig}
         targetMcu={targetMcu}
         onSelectTargetMcu={setTargetMcu}
@@ -698,12 +702,46 @@ export default function App() {
           <RtosEditorView />
         </div>
       ) : (
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
           {/* Left: Drag & Drop Modular Block Palette */}
-          <BlockPalette onAddBlock={handleAddBlock} activeScope={activeScope} />
+          <div className={`
+            lg:block
+            ${isMobilePaletteOpen ? 'block fixed inset-0 z-40 bg-black/80' : 'hidden'}
+          `}>
+            {isMobilePaletteOpen && (
+              <div
+                className="absolute inset-0"
+                onClick={() => setIsMobilePaletteOpen(false)}
+              />
+            )}
+            <div className={`
+              ${isMobilePaletteOpen ? 'absolute left-0 top-0 bottom-0 w-[85%] max-w-[320px]' : ''}
+              h-full
+            `}>
+              <BlockPalette
+                onAddBlock={(blockType, params) => {
+                  handleAddBlock(blockType, params);
+                  setIsMobilePaletteOpen(false);
+                }}
+                activeScope={activeScope}
+              />
+            </div>
+          </div>
+
+          {/* Mobile Palette Toggle Button */}
+          {!isMobilePaletteOpen && (
+            <button
+              onClick={() => setIsMobilePaletteOpen(true)}
+              className="lg:hidden absolute left-0 top-1/2 -translate-y-1/2 z-30 bg-[#2A2D35] p-2 rounded-r-md border border-l-0 border-[#3A3F4B] shadow-[2px_2px_0px_#000] text-[#E0E0E6]"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
 
           {/* Center: Visual Interactive Pipeline & Canvas */}
-          <div className="flex-1 flex flex-col min-w-0 h-full">
+          <div className="flex-1 flex flex-col min-w-0 h-full relative">
             <WorkspaceCanvas
               blocks={blocks}
               setBlocks={setBlocks}
@@ -728,7 +766,7 @@ export default function App() {
           {/* Right: Dual Inspector (Live Simulator / Generated Code Viewer) */}
           <aside
             id="right-inspector"
-            className="w-full md:w-[420px] lg:w-[480px] xl:w-[540px] flex flex-col bg-[#161920] border-l border-[#2A2D35] h-full overflow-hidden"
+            className="w-full lg:w-[420px] xl:w-[480px] 2xl:w-[540px] flex flex-col bg-[#161920] lg:border-l border-t lg:border-t-0 border-[#2A2D35] lg:h-full h-[50vh] lg:h-auto overflow-hidden shrink-0"
           >
             {/* Inspector Top Tabs Switcher */}
             <div className="bg-[#0F1115] px-3 py-2 border-b border-[#2A2D35] flex items-center justify-between">
@@ -856,6 +894,14 @@ export default function App() {
         blocks={blocks}
         onImportBlocks={handleImportBlocks}
         codeOutput={codeOutput}
+      />
+
+      <AbiSymbiosisModal
+        isOpen={isAbiModalOpen}
+        onClose={() => setIsAbiModalOpen(false)}
+        onCustomBlockAdded={(newBlockId) => {
+           console.log("New block added:", newBlockId);
+        }}
       />
 
       {/* Variable & SRAM Memory Manager Modal */}

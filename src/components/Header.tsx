@@ -18,6 +18,7 @@ import {
   Tv,
   RefreshCw,
   FolderArchive,
+  Code,
   Code2,
   Flame,
   Radio,
@@ -61,6 +62,7 @@ interface HeaderProps {
   variables?: VariableDefinition[];
   onOpenRenderEngine?: () => void;
   onOpenReverseEngine?: () => void;
+  onOpenAbiModal?: () => void;
   renderConfig?: RenderEngineConfig;
   targetMcu?: McuTarget;
   onSelectTargetMcu?: (target: McuTarget) => void;
@@ -100,6 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
   variables = [],
   onOpenRenderEngine,
   onOpenReverseEngine,
+  onOpenAbiModal,
   renderConfig,
   targetMcu = 'avr',
   onSelectTargetMcu,
@@ -519,6 +522,17 @@ export const Header: React.FC<HeaderProps> = ({
             <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
             <span className="hidden xl:inline">Visszafejtő & ZIP Export</span>
             <span className="inline xl:hidden">Visszafejtő</span>
+          </button>
+        )}
+
+        {onOpenAbiModal && (
+          <button
+            onClick={onOpenAbiModal}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-[#1A1D24] hover:bg-pink-500/20 text-pink-400 border border-pink-500/40 hover:border-pink-400 rounded-xs shadow-[2px_2px_0px_#000] transition-all cursor-pointer"
+            title="Dinamikus C++ Header & ASM Blokk Generátor"
+          >
+            <Code className="w-3.5 h-3.5 text-pink-400" />
+            <span className="hidden xl:inline">C-Assembly ABI</span>
           </button>
         )}
 

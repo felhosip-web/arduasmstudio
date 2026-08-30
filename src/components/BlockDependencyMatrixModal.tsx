@@ -14,20 +14,20 @@ export const BlockDependencyMatrixModal: React.FC<Props> = ({ blocks, setBlocks,
   const analysis = useMemo(() => {
     const initializedPins = new Set<string>();
     const usedPins = new Map<string, { read: boolean; write: boolean; type: 'digital' | 'analog' | 'pwm' }>();
-    const missingInits: { pin: string; neededFor: string; type: 'digital' | 'analog' | 'pwm'; insertAfterId?: string }[] = [];
+    const missingInits: { pin: string; neededFor: string; type: 'digital' | 'analog' | 'pwm'; insertAfterId?: string; requiredMode: 'INPUT' | 'OUTPUT' }[] = [];
 
     // Először megkeressük az összes inicializálást (setup scope)
-    blocks.filter(b => b.scope === 'setup' && b.type === 'pin_mode').forEach(b => {
-      if (b.parameters && b.parameters.pin) {
-        initializedPins.add(b.parameters.pin.toString());
+    blocks.filter(b => b.scope === 'setup' && b.type === 'io_pin_mode').forEach(b => {
+      if (b.params && b.params.pin) {
+        initializedPins.add(b.params.pin.toString());
       }
     });
 
     // Majd elemezzük a loop-ban és a megszakításokban (vagy akárhol máshol) lévő használatot
     blocks.filter(b => b.scope !== 'setup').forEach(b => {
-      const pinParam = b.parameters?.pin?.toString();
+      const pinParam = b.params?.pin?.toString();
 
-      if (b.type === 'digital_write' || b.type === 'digital_read' || b.type === 'analog_read' || b.type === 'analog_write') {
+      if (b.type === 'io_digital_write' || b.type === 'io_digital_read' || b.type === 'analog_read' || b.type === 'analog_pwm_write') {
         if (pinParam) {
           const isWrite = b.type.includes('write');
           const isAnalog = b.type.includes('analog');
@@ -41,11 +41,12 @@ export const BlockDependencyMatrixModal: React.FC<Props> = ({ blocks, setBlocks,
           }
 
           // Inicializálatlan láb észlelése
-          if (!initializedPins.has(pinParam) && !isAnalog) { // analogRead nem feltétlen igényel pinMode-ot AVR-en, de a digitalWrite/Read igen
+          if (!initializedPins.has(pinParam)) { // Most már analogot is figyeli, ahogy kérted.
              missingInits.push({
                pin: pinParam,
                neededFor: b.type,
-               type: 'digital',
+               type: isAnalog ? (isWrite ? 'pwm' : 'analog') : 'digital',
+               requiredMode: isWrite ? 'OUTPUT' : 'INPUT',
              });
           }
         }
@@ -68,14 +69,13 @@ export const BlockDependencyMatrixModal: React.FC<Props> = ({ blocks, setBlocks,
     { parent: 'interrupt_attach', allowedChildren: 'Csak ISR kompatibilis utasítások (nincs delay, millis() módosítás)', scope: 'setup' },
   ];
 
-  const handleAutoFixInit = (pin: string) => {
+  const handleAutoFixInit = (pin: string, requiredMode: 'INPUT' | 'OUTPUT') => {
     // Készítünk egy új pinMode blokkot a setup-ba
     const newBlock: ProgramBlock = {
       id: `block-${Date.now()}`,
-      type: 'pin_mode',
+      type: 'io_pin_mode',
       scope: 'setup',
-      parameters: { pin: pin, mode: 'OUTPUT' }, // Default outputra
-      parentId: null
+      params: { pin: pin, mode: requiredMode },
     };
 
     setBlocks(prev => {
@@ -142,11 +142,11 @@ export const BlockDependencyMatrixModal: React.FC<Props> = ({ blocks, setBlocks,
                            <span className="text-xs text-gray-500">Hiányzó pinMode! A <span className="text-gray-300 font-mono">{issue.neededFor}</span> blokkhoz szükséges.</span>
                         </div>
                         <button
-                          onClick={() => handleAutoFixInit(issue.pin)}
+                          onClick={() => handleAutoFixInit(issue.pin, issue.requiredMode)}
                           className="flex items-center gap-1.5 px-3 py-1.5 bg-red-900/40 hover:bg-red-800/60 text-red-300 rounded text-xs transition-colors border border-red-700/50"
                         >
                           <PlusCircle className="w-3.5 h-3.5" />
-                          pinMode() Beszúrása
+                          pinMode({issue.requiredMode}) Beszúrása
                         </button>
                       </div>
                     ))}

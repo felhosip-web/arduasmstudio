@@ -103,6 +103,7 @@ export interface BlockDefinition {
   color: string;
   accentColor: string;
   params: BlockParamDef[];
+  outputs?: string[];
   defaultParams: Record<string, any>;
   calculateCycles: (params: Record<string, any>) => number;
   generateAsm: (params: Record<string, any>, labelSuffix?: string) => string[];

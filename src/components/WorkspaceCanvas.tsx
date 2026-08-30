@@ -326,21 +326,6 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
-      {/* On-Canvas Top Right Toolbar */}
-      <div className="absolute top-4 right-4 z-20 flex gap-2">
-        <button
-          onClick={() => setShowPorts(!showPorts)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all shadow-sm ${
-            showPorts
-              ? 'bg-blue-600/90 text-white border border-blue-500 hover:bg-blue-500'
-              : 'bg-[#2A303C] text-gray-400 border border-[#3A404F] hover:text-gray-200 hover:bg-[#323844]'
-          }`}
-          title="I/O Portok, Bemenetek és Kimenetek Részletes Nézete"
-        >
-          <span className="text-base leading-none">🔌</span>
-          I/O Portok <span className="font-mono text-[10px] ml-1 bg-black/20 px-1 py-0.5 rounded opacity-80">{showPorts ? 'BE' : 'KI'}</span>
-        </button>
-      </div>
       {/* On-Canvas Telemetry HUD (Live Kernel Debugger) */}
       {renderConfig?.renderDebugOverlay && (
         <div
@@ -431,6 +416,24 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
 
         {/* Clear Button, Assistant Toggle, AVR Doku & Fast Engine Info */}
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setShowPorts(!showPorts)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold font-mono rounded-xs border shadow-[2px_2px_0px_#000] transition-all cursor-pointer ${
+              showPorts
+                ? 'bg-blue-600/90 text-white border-blue-500'
+                : 'bg-[#1A1D24] text-[#8A8D98] border-[#3A3F4B] hover:text-white hover:border-blue-500/50'
+            }`}
+            title="I/O Portok, Bemenetek és Kimenetek Részletes Nézete"
+          >
+            <span className="text-base leading-none">🔌</span>
+            <span className="hidden sm:inline">I/O Portok</span>
+            <span className={`text-[9px] px-1 py-0.2 rounded-xs border font-bold ${
+              showPorts ? 'bg-blue-950 text-blue-300 border-blue-500/40' : 'bg-[#0F1115] text-[#8A8D98] border-[#3A3F4B]'
+            }`}>
+              {showPorts ? 'BE' : 'KI'}
+            </span>
+          </button>
+
           {onToggleAvrDocs && (
             <button
               id="btn-toggle-avr-docs"
@@ -670,17 +673,19 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
                 }`}
               >
                 {showPorts && (
-                  <div className="absolute -top-3 -right-2 flex flex-col gap-1 z-10 pointer-events-none">
+                  <div className="absolute top-1 right-24 flex flex-col gap-1 z-10 pointer-events-none">
                     <div className="flex items-center gap-1.5 bg-black/80 px-2 py-1 rounded shadow-md border border-sky-400/50 text-[10px] text-sky-400">
                       <span className="text-xs">📥</span>
                       <span className="font-bold">Socket</span>
                       <span className="font-mono text-gray-300 ml-1">{def.params.map(p => p.label).join(' | ') || 'NINCS'}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-black/80 px-2 py-1 rounded shadow-md border border-amber-400/50 text-[10px] text-amber-400">
-                      <span className="text-xs">📤</span>
-                      <span className="font-bold">Plug</span>
-                      <span className="font-mono text-gray-300 ml-1">HW / RAM / FLOW</span>
-                    </div>
+                    {def.outputs && def.outputs.length > 0 && (
+                      <div className="flex items-center gap-1.5 bg-black/80 px-2 py-1 rounded shadow-md border border-amber-400/50 text-[10px] text-amber-400">
+                        <span className="text-xs">📤</span>
+                        <span className="font-bold">Plug</span>
+                        <span className="font-mono text-gray-300 ml-1">{def.outputs.join(' / ')}</span>
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* Block Header */}

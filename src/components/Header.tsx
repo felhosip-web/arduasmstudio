@@ -42,6 +42,7 @@ interface HeaderProps {
   onOpenMemoryEditor?: () => void;
   onOpenVariableEditor?: () => void;
   onOpenLinter?: () => void;
+  onOpenDependencyMatrix?: () => void;
   onOpenTimingProfiler?: () => void;
   onOpenStateMachine?: () => void;
   onOpenLogicAnalyzer?: () => void;
@@ -84,6 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLinter,
   onOpenTimingProfiler,
   onOpenStateMachine,
+  onOpenDependencyMatrix,
   onOpenLogicAnalyzer,
   onOpenVirtualWiring,
   onOpenAvrDocs,
@@ -386,6 +388,7 @@ export const Header: React.FC<HeaderProps> = ({
             onOpenLinter={onOpenLinter}
             onOpenTimingProfiler={onOpenTimingProfiler}
             onOpenStateMachine={onOpenStateMachine}
+            onOpenDependencyMatrix={onOpenDependencyMatrix}
             onOpenLogicAnalyzer={onOpenLogicAnalyzer}
             onOpenVirtualWiring={onOpenVirtualWiring}
             onOpenAvrDocs={onOpenAvrDocs}

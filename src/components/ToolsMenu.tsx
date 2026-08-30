@@ -22,6 +22,7 @@ import {
   Flame,
   Radio,
   Wifi,
+  GitMerge,
 } from 'lucide-react';
 import { ProgramBlock, VariableDefinition } from '../types';
 import { runHardwareLinter } from '../utils/hardwareLinter';
@@ -32,6 +33,7 @@ interface ToolsMenuProps {
   onOpenLinter: () => void;
   onOpenTimingProfiler?: () => void;
   onOpenStateMachine?: () => void;
+  onOpenDependencyMatrix?: () => void;
   onOpenLogicAnalyzer?: () => void;
   onOpenVirtualWiring?: () => void;
   onOpenAvrDocs?: () => void;
@@ -53,6 +55,7 @@ export const ToolsMenu: React.FC<ToolsMenuProps> = ({
   onOpenLinter,
   onOpenTimingProfiler,
   onOpenStateMachine,
+  onOpenDependencyMatrix,
   onOpenLogicAnalyzer,
   onOpenVirtualWiring,
   onOpenAvrDocs,
@@ -181,6 +184,44 @@ export const ToolsMenu: React.FC<ToolsMenuProps> = ({
           </div>
 
           <div className="p-1.5 space-y-1">
+
+            {/* FEATURE: Függőségi Mátrix & Adatfolyam Elemző */}
+            {onOpenDependencyMatrix && (
+              <button
+                id="menu-item-dependency-matrix"
+                onClick={() => {
+                  setIsOpen(false);
+                  onOpenDependencyMatrix();
+                }}
+                className="w-full text-left p-2.5 rounded-xs bg-[#1A1D24] hover:bg-indigo-500/15 border border-[#3A3F4B] hover:border-indigo-400 transition-colors group cursor-pointer"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-xs bg-indigo-950/60 text-indigo-400 border border-indigo-500/40 group-hover:scale-105 transition-transform">
+                      <GitMerge className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white font-mono flex items-center gap-1.5">
+                        <span>Függőségi Gráf & Illesztési Mátrix</span>
+                        <span className="text-[9px] bg-indigo-950 text-indigo-300 px-1 py-0.2 rounded-xs border border-indigo-500/40">
+                          ÚJ
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#8A8D98] group-hover:text-[#C5C8D4] leading-tight mt-0.5">
+                        Interaktív adatfolyam, beágyazhatósági szabályok és automatikus inicializálatlan I/O javítás.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-xs border bg-indigo-950 text-indigo-300 border-indigo-500/40">
+                      Elemző
+                    </span>
+                  </div>
+                </div>
+              </button>
+            )}
+
             {/* FEATURE 1: Hardver-Ütközés & Statikus Kódelemző (ACTIVE) */}
             <button
               id="menu-item-hardware-linter"

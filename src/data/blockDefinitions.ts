@@ -32,6 +32,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
         defaultValue: 'OUTPUT',
       },
     ],
+    outputs: ['HW Láb Mód (DDR)'],
     defaultParams: { pin: '13', mode: 'OUTPUT' },
     calculateCycles: () => 2, // sbi/cbi 2 cycles
     generateAsm: (params) => {
@@ -102,6 +103,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
         defaultValue: 'HIGH',
       },
     ],
+    outputs: ['HW GPIO Logikai Jelszint (PORT)'],
     defaultParams: { pin: '13', state: 'HIGH' },
     calculateCycles: () => 2,
     generateAsm: (params) => {

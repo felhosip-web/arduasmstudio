@@ -11,6 +11,7 @@ import { SimulatorPanel } from './components/SimulatorPanel';
 import { CodeViewer } from './components/CodeViewer';
 import { TimingGuideModal } from './components/TimingGuideModal';
 import { MemoryEditorModal } from './components/MemoryEditorModal';
+import { BlockDependencyMatrixModal } from './components/BlockDependencyMatrixModal';
 import { RenderEngineModal } from './components/RenderEngineModal';
 import { ReverseEngineModal } from './components/ReverseEngineModal';
 import { VariableEditorModal } from './components/VariableEditorModal';
@@ -89,6 +90,7 @@ export default function App() {
   const [activeMainTab, setActiveMainTab] = useState<'blocks' | 'rtos'>('blocks');
   const [activeRightTab, setActiveRightTab] = useState<'simulator' | 'code'>('simulator');
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
+  const [isDependencyMatrixOpen, setIsDependencyMatrixOpen] = useState<boolean>(false);
   const [isMemoryEditorOpen, setIsMemoryEditorOpen] = useState<boolean>(false);
   const [isRenderEngineOpen, setIsRenderEngineOpen] = useState<boolean>(false);
   const [isReverseEngineOpen, setIsReverseEngineOpen] = useState<boolean>(false);
@@ -671,6 +673,7 @@ export default function App() {
         onOpenLinter={() => setIsHardwareLinterOpen(true)}
         onOpenTimingProfiler={() => setIsTimingProfilerOpen(true)}
         onOpenStateMachine={() => setIsStateMachineOpen(true)}
+          onOpenDependencyMatrix={() => setIsDependencyMatrixOpen(true)}
         onOpenLogicAnalyzer={() => setIsLogicAnalyzerOpen(true)}
         onOpenVirtualWiring={() => setIsVirtualWiringOpen(true)}
         onOpenAvrDocs={() => setIsAvrDocsOpen(true)}
@@ -867,6 +870,14 @@ export default function App() {
 
       {/* AVR Assembly & Timing Guide Modal */}
       <TimingGuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
+
+      {isDependencyMatrixOpen && (
+        <BlockDependencyMatrixModal
+          blocks={blocks}
+          setBlocks={setBlocks}
+          onClose={() => setIsDependencyMatrixOpen(false)}
+        />
+      )}
 
       {/* Arduino EEPROM & Flash Memory Hex/Dec/Bin Editor Modal */}
       <MemoryEditorModal

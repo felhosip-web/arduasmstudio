@@ -102,6 +102,7 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
 
   // Drag and drop reordering state
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
+  const [showPorts, setShowPorts] = useState<boolean>(false);
   const [dragOverBlockId, setDragOverBlockId] = useState<string | null>(null);
   const [dropPosition, setDropPosition] = useState<'above' | 'below'>('below');
 
@@ -325,6 +326,21 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
+      {/* On-Canvas Top Right Toolbar */}
+      <div className="absolute top-4 right-4 z-20 flex gap-2">
+        <button
+          onClick={() => setShowPorts(!showPorts)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all shadow-sm ${
+            showPorts
+              ? 'bg-blue-600/90 text-white border border-blue-500 hover:bg-blue-500'
+              : 'bg-[#2A303C] text-gray-400 border border-[#3A404F] hover:text-gray-200 hover:bg-[#323844]'
+          }`}
+          title="I/O Portok, Bemenetek és Kimenetek Részletes Nézete"
+        >
+          <span className="text-base leading-none">🔌</span>
+          I/O Portok <span className="font-mono text-[10px] ml-1 bg-black/20 px-1 py-0.5 rounded opacity-80">{showPorts ? 'BE' : 'KI'}</span>
+        </button>
+      </div>
       {/* On-Canvas Telemetry HUD (Live Kernel Debugger) */}
       {renderConfig?.renderDebugOverlay && (
         <div
@@ -653,6 +669,20 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
                     : ''
                 }`}
               >
+                {showPorts && (
+                  <div className="absolute -top-3 -right-2 flex flex-col gap-1 z-10 pointer-events-none">
+                    <div className="flex items-center gap-1.5 bg-black/80 px-2 py-1 rounded shadow-md border border-sky-400/50 text-[10px] text-sky-400">
+                      <span className="text-xs">📥</span>
+                      <span className="font-bold">Socket</span>
+                      <span className="font-mono text-gray-300 ml-1">{def.params.map(p => p.label).join(' | ') || 'NINCS'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-black/80 px-2 py-1 rounded shadow-md border border-amber-400/50 text-[10px] text-amber-400">
+                      <span className="text-xs">📤</span>
+                      <span className="font-bold">Plug</span>
+                      <span className="font-mono text-gray-300 ml-1">HW / RAM / FLOW</span>
+                    </div>
+                  </div>
+                )}
                 {/* Block Header */}
                 <div className="px-4 py-2.5 border-b border-[#2A2D35] flex items-center justify-between gap-2 bg-[#161920]">
                   <div className="flex items-center gap-2.5 flex-wrap">

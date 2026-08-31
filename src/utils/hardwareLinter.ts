@@ -110,6 +110,29 @@ export function runHardwareLinter(
     isr: new Set(),
   };
   activeBlocks.forEach((b) => {
+    if (b.type === 'pointer_offset_indexed') {
+      const p = b.params;
+      if (p.offset < 0 || p.offset > 63) {
+        items.push({
+          id: `ptr_offset_bounds_${b.id}`,
+          title: 'Érvénytelen Pointer Eltolás',
+          description: `Az LDD/STD offset értéke (q) csak 0-63 között lehet. Jelenlegi érték: ${p.offset}`,
+          severity: 'critical',
+          category: 'memory_safety',
+          relatedBlockId: b.id
+        });
+      }
+      if (p.reg === 'X') {
+        items.push({
+          id: `ptr_x_offset_${b.id}`,
+          title: 'Hardveres LDD/STD Regiszter Korlát',
+          description: `Az X (r27:r26) indexregiszter nem támogatja a hardveres LDD/STD eltolásos címzést. Kérlek válassz Y vagy Z mutatót!`,
+          severity: 'critical',
+          category: 'memory_safety',
+          relatedBlockId: b.id
+        });
+      }
+    }
     if (b.type === 'flow_label' && b.params.labelName) {
       labelsByScope[b.scope].add(String(b.params.labelName).trim());
     }

@@ -53,6 +53,8 @@ interface HeaderProps {
   onOpenEsp32Interrupts?: () => void;
   onOpenRtosEditor?: () => void;
   onOpenEsp32Dma?: () => void;
+  onOpenPointerStudio?: () => void;
+
   onOpenEsp32I2a?: () => void;
   onOpenConnectivityModal?: () => void;
   onOpenBootloaderModal?: () => void;
@@ -95,6 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenRtosEditor,
   onOpenEsp32Dma,
   onOpenEsp32I2a,
+  onOpenPointerStudio,
   onOpenConnectivityModal,
   onOpenBootloaderModal,
   onOpenWatchpoints,
@@ -398,6 +401,7 @@ export const Header: React.FC<HeaderProps> = ({
             onOpenRtosEditor={onOpenRtosEditor}
             onOpenEsp32Dma={onOpenEsp32Dma}
             onOpenEsp32I2a={onOpenEsp32I2a}
+            onOpenPointerStudio={onOpenPointerStudio}
             onOpenConnectivityModal={onOpenConnectivityModal}
             onOpenBootloaderModal={onOpenBootloaderModal}
             onOpenWatchpoints={onOpenWatchpoints}

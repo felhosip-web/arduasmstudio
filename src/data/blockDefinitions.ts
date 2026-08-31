@@ -1,7 +1,192 @@
 import { BlockDefinition, ArduinoPin } from '../types';
 import { PIN_MAPPINGS, CYCLE_NS } from '../utils/hardwareMap';
 
+
+// ==========================================
+// C POINTER & AVR INDIREKT MEMÓRIACÍMZÉS
+// ==========================================
+
+export const pointer_init: BlockDefinition = {
+  type: 'pointer_init',
+  category: 'pointer',
+  name: 'Pointer Inicializálás',
+  label: 'Pointer Inicializálás',
+  shortDesc: '16-bites memóriacím betöltése',
+  icon: 'Cpu',
+  color: 'violet',
+  accentColor: 'violet',
+  defaultParams: { reg: 'Z', address: 0x0100 },
+  explanationHu: (p) => `16-bites memóriacím (0x${(p.address as number).toString(16).toUpperCase()}) betöltése a ${p.reg} indexregiszter-párba (lo8/hi8).`,
+  params: [
+    { key: 'reg', type: 'select', label: 'Index Regiszter', options: ['X', 'Y', 'Z'], default: 'Z' },
+    { key: 'address', type: 'number', label: '16-bites Memóriacím', default: 0x0100 }
+  ],
+  generateC: (p) => {
+    const r = p.reg as string;
+    return [`uint8_t *ptr_${r} = (uint8_t *)0x${(p.address as number).toString(16).toUpperCase()};`];
+  },
+  generateInlineAsm: (p) => {
+    const r = p.reg as string;
+    const addr = p.address as number;
+    const lo = addr & 0xFF;
+    const hi = (addr >> 8) & 0xFF;
+    let loReg, hiReg;
+    if (r === 'X') { loReg = 'r26'; hiReg = 'r27'; }
+    else if (r === 'Y') { loReg = 'r28'; hiReg = 'r29'; }
+    else { loReg = 'r30'; hiReg = 'r31'; }
+    return [`__asm__ __volatile__ ("ldi ${loReg}, 0x${lo.toString(16).padStart(2, '0').toUpperCase()} \n\t");`, `__asm__ __volatile__ ("ldi ${hiReg}, 0x${hi.toString(16).padStart(2, '0').toUpperCase()} \n\t");`];
+  },
+  calculateCycles: () => 2
+};
+
+export const pointer_read_deref: BlockDefinition = {
+  type: 'pointer_read_deref',
+  category: 'pointer',
+  name: 'Indirekt Olvasás',
+  label: 'Indirekt Olvasás',
+  shortDesc: 'Olvasás mutatóval',
+  icon: 'Cpu',
+  color: 'violet',
+  accentColor: 'violet',
+  defaultParams: { reg: 'Z', destReg: 'r16', mode: 'NORMAL' },
+  explanationHu: (p) => `Adat beolvasása az SRAM/Flash memóriából a ${p.reg} mutató által mutatott címről. Címzési mód: ${p.mode}`,
+  params: [
+    { key: 'reg', type: 'select', label: 'Mutató (PTR)', options: ['X', 'Y', 'Z'], default: 'Z' },
+    { key: 'destReg', type: 'register', label: 'Cél Regiszter', default: 'r16' },
+    { key: 'mode', type: 'select', label: 'Mód', options: ['NORMAL', 'POST_INC', 'PRE_DEC', 'FLASH'], default: 'NORMAL' }
+  ],
+  generateC: (p) => {
+    const m = p.mode as string;
+    const r = p.reg as string;
+    const dest = p.destReg as string;
+    if (m === 'NORMAL') return [`uint8_t ${dest} = *ptr_${r};`];
+    if (m === 'POST_INC') return [`uint8_t ${dest} = *ptr_${r}++;`];
+    if (m === 'PRE_DEC') return [`uint8_t ${dest} = *(--ptr_${r});`];
+    if (m === 'FLASH') return [`uint8_t ${dest} = pgm_read_byte(ptr_Z);`];
+    return [''];
+  },
+  generateInlineAsm: (p) => {
+    const m = p.mode as string;
+    const r = p.reg as string;
+    const dest = p.destReg as string;
+    if (m === 'NORMAL') return [`__asm__ __volatile__ ("ld ${dest}, ${r}\n\t");`];
+    if (m === 'POST_INC') return [`__asm__ __volatile__ ("ld ${dest}, ${r}+\n\t");`];
+    if (m === 'PRE_DEC') return [`__asm__ __volatile__ ("ld ${dest}, -${r}\n\t");`];
+    if (m === 'FLASH') return [`__asm__ __volatile__ ("lpm ${dest}, Z\n\t");`];
+    return [''];
+  },
+  calculateCycles: (p) => (p.mode === 'FLASH' ? 3 : 2)
+};
+
+export const pointer_write_deref: BlockDefinition = {
+  type: 'pointer_write_deref',
+  category: 'pointer',
+  name: 'Indirekt Írás',
+  label: 'Indirekt Írás',
+  shortDesc: 'Írás mutatóval',
+  icon: 'Cpu',
+  color: 'violet',
+  accentColor: 'violet',
+  defaultParams: { reg: 'Z', srcReg: 'r16', mode: 'NORMAL' },
+  explanationHu: (p) => `Adat írása az SRAM memóriába a ${p.reg} mutató által mutatott címre. Címzési mód: ${p.mode}`,
+  params: [
+    { key: 'reg', type: 'select', label: 'Mutató (PTR)', options: ['X', 'Y', 'Z'], default: 'Z' },
+    { key: 'srcReg', type: 'register', label: 'Forrás Regiszter', default: 'r16' },
+    { key: 'mode', type: 'select', label: 'Mód', options: ['NORMAL', 'POST_INC', 'PRE_DEC'], default: 'NORMAL' }
+  ],
+  generateC: (p) => {
+    const m = p.mode as string;
+    const r = p.reg as string;
+    const src = p.srcReg as string;
+    if (m === 'NORMAL') return [`*ptr_${r} = ${src};`];
+    if (m === 'POST_INC') return [`*ptr_${r}++ = ${src};`];
+    if (m === 'PRE_DEC') return [`*(--ptr_${r}) = ${src};`];
+    return [''];
+  },
+  generateInlineAsm: (p) => {
+    const m = p.mode as string;
+    const r = p.reg as string;
+    const src = p.srcReg as string;
+    if (m === 'NORMAL') return [`__asm__ __volatile__ ("st ${r}, ${src}\n\t");`];
+    if (m === 'POST_INC') return [`__asm__ __volatile__ ("st ${r}+, ${src}\n\t");`];
+    if (m === 'PRE_DEC') return [`__asm__ __volatile__ ("st -${r}, ${src}\n\t");`];
+    return [''];
+  },
+  calculateCycles: () => 2
+};
+
+export const pointer_offset_indexed: BlockDefinition = {
+  type: 'pointer_offset_indexed',
+  category: 'pointer',
+  name: 'Indexelt Elérés',
+  label: 'Indexelt Elérés',
+  shortDesc: 'LDD/STD eltolással',
+  icon: 'Cpu',
+  color: 'violet',
+  accentColor: 'violet',
+  defaultParams: { dir: 'READ', reg: 'Y', dataReg: 'r16', offset: 0 },
+  explanationHu: (p) => `6-bites hardveres eltolás (+${p.offset}) alkalmazása a ${p.reg} mutatón (${p.dir === 'READ' ? 'LDD' : 'STD'}).`,
+  params: [
+    { key: 'dir', type: 'select', label: 'Irány', options: ['READ', 'WRITE'], default: 'READ' },
+    { key: 'reg', type: 'select', label: 'Mutató (Csak Y/Z)', options: ['Y', 'Z'], default: 'Y' },
+    { key: 'dataReg', type: 'register', label: 'Adat Regiszter', default: 'r16' },
+    { key: 'offset', type: 'number', label: 'Eltolás (q: 0-63)', default: 0 }
+  ],
+  generateC: (p) => {
+    const r = p.reg as string;
+    const q = p.offset as number;
+    const d = p.dataReg as string;
+    if (p.dir === 'READ') return [`uint8_t ${d} = ptr_${r}[${q}];`];
+    return [`ptr_${r}[${q}] = ${d};`];
+  },
+  generateInlineAsm: (p) => {
+    const r = p.reg as string;
+    const q = p.offset as number;
+    const d = p.dataReg as string;
+    if (p.dir === 'READ') return [`__asm__ __volatile__ ("ldd ${d}, ${r}+${q}\n\t");`];
+    return [`__asm__ __volatile__ ("std ${r}+${q}, ${d}\n\t");`];
+  },
+  calculateCycles: () => 2
+};
+
+export const pointer_arithmetic: BlockDefinition = {
+  type: 'pointer_arithmetic',
+  category: 'pointer',
+  name: 'Pointer Aritmetika',
+  label: 'Pointer Aritmetika',
+  shortDesc: 'ADIW/SBIW 16-bites művelet',
+  icon: 'Cpu',
+  color: 'violet',
+  accentColor: 'violet',
+  defaultParams: { reg: 'Z', op: 'ADD', val: 1 },
+  explanationHu: (p) => `Hardveres 16-bites aritmetika alkalmazása a ${p.reg} mutatón (${p.op} ${p.val}).`,
+  params: [
+    { key: 'reg', type: 'select', label: 'Mutató (Csak X/Y/Z)', options: ['X', 'Y', 'Z'], default: 'Z' },
+    { key: 'op', type: 'select', label: 'Művelet', options: ['ADD', 'SUB'], default: 'ADD' },
+    { key: 'val', type: 'number', label: 'Érték (0-63)', default: 1 }
+  ],
+  generateC: (p) => {
+    const r = p.reg as string;
+    const v = p.val as number;
+    if (p.op === 'ADD') return [`ptr_${r} += ${v};`];
+    return [`ptr_${r} -= ${v};`];
+  },
+  generateInlineAsm: (p) => {
+    const r = p.reg as string;
+    const v = p.val as number;
+    const regWord = r === 'X' ? 'r26' : (r === 'Y' ? 'r28' : 'r30');
+    if (p.op === 'ADD') return [`__asm__ __volatile__ ("adiw ${regWord}, ${v}\n\t");`];
+    return [`__asm__ __volatile__ ("sbiw ${regWord}, ${v}\n\t");`];
+  },
+  calculateCycles: () => 2
+};
+
 export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
+  pointer_init,
+  pointer_read_deref,
+  pointer_write_deref,
+  pointer_offset_indexed,
+  pointer_arithmetic,
   // ==========================================
   // 1. I/O & PORTVEZÉRLÉS
   // ==========================================
@@ -7719,6 +7904,12 @@ export const CATEGORY_METADATA: Record<
   string,
   { label: string; description: string; icon: string; badgeColor: string }
 > = {
+  pointer: {
+    label: 'C Pointer & ASM',
+    description: 'X/Y/Z Index Regiszterek (Indirekt memóriacímzés, Dereferencia, Offset és Aritmetika)',
+    icon: 'Cpu',
+    badgeColor: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20',
+  },
   esp32: {
     label: '⚡ ESP32 & Xtensa Dual-Core (240MHz)',
     description: 'Nagysebességű 32-bites regiszterek (W1TS/W1TC), FreeRTOS kétmagos taszkok, Kapacitív Touch, Valós Analóg DAC, LEDC PWM és Wi-Fi',

@@ -65,6 +65,7 @@ export type BlockCategory =
   | 'modules'
   | 'math'
   | 'memory'
+  | 'pointer'
   | 'master_slave'
   | 'datastruct'
   | 'esp32';

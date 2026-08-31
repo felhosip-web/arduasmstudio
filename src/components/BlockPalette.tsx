@@ -43,6 +43,7 @@ const CATEGORY_ICONS: Record<string, any> = {
   flow: RefreshCw,
   interrupt: Radio,
   math: Hash,
+  pointer: Cpu,
 };
 
 export const BlockPalette: React.FC<BlockPaletteProps> = ({

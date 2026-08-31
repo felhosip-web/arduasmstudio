@@ -42,6 +42,7 @@ interface ToolsMenuProps {
   onOpenEsp32Interrupts?: () => void;
   onOpenRtosEditor?: () => void;
   onOpenEsp32Dma?: () => void;
+  onOpenPointerStudio?: () => void;
   onOpenEsp32I2a?: () => void;
   onOpenConnectivityModal?: () => void;
   onOpenBootloaderModal?: () => void;
@@ -702,6 +703,42 @@ export const ToolsMenu: React.FC<ToolsMenuProps> = ({
                   <div className="text-right shrink-0">
                     <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-xs border bg-purple-950 text-purple-300 border-purple-500/40">
                       I2S DSP
+                    </span>
+                  </div>
+                </div>
+              </button>
+            )}
+
+
+            {onOpenPointerStudio && (
+              <button
+                id="menu-item-pointer-studio"
+                onClick={() => {
+                  setIsOpen(false);
+                  onOpenPointerStudio();
+                }}
+                className="w-full text-left p-2.5 rounded-xs bg-[#1A1D24] hover:bg-violet-500/15 border border-[#3A3F4B] hover:border-violet-400 transition-colors group cursor-pointer"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-xs bg-violet-950/60 text-violet-400 border border-violet-500/40 group-hover:scale-105 transition-transform">
+                      <Cpu className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white font-mono flex items-center gap-1.5">
+                        <span>C Pointer Stúdió</span>
+                        <span className="text-[9px] bg-violet-950 text-violet-300 px-1 py-0.2 rounded-xs border border-violet-500/40">
+                          X/Y/Z PTR
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#8A8D98] group-hover:text-[#C5C8D4] leading-tight mt-0.5">
+                        Indirekt memóriacímzés, Pointer aritmetika, Hardveres C-ASM generátor
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-xs border bg-violet-950 text-violet-300 border-violet-500/40">
+                      SRAM
                     </span>
                   </div>
                 </div>

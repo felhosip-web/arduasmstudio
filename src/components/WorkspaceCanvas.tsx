@@ -57,6 +57,8 @@ interface WorkspaceCanvasProps {
   renderConfig?: RenderEngineConfig;
   setRenderConfig?: React.Dispatch<React.SetStateAction<RenderEngineConfig>>;
   onOpenRenderEngine?: () => void;
+  onOpenPointerStudio?: () => void;
+
   variables?: VariableDefinition[];
   setVariables?: React.Dispatch<React.SetStateAction<VariableDefinition[]>>;
   lastAddedBlockId?: string | null;
@@ -79,6 +81,7 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
   renderConfig,
   setRenderConfig,
   onOpenRenderEngine,
+  onOpenPointerStudio,
   variables = [],
   setVariables,
   lastAddedBlockId,
@@ -1100,6 +1103,16 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
           title="Nagyítás (+10%)"
         >
           +
+        </button>
+
+        <button
+          id="btn-pointer-studio"
+          onClick={onOpenPointerStudio}
+          className="flex items-center gap-1 px-2 h-7 bg-violet-500/15 hover:bg-violet-500/25 text-violet-400 border border-violet-500/40 rounded-xs text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[1px_1px_0px_#000]"
+          title="C Pointer Stúdió Megnyitása"
+        >
+          <Cpu className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Pointers</span>
         </button>
 
         {onOpenRenderEngine && (

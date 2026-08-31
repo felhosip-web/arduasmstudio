@@ -28,6 +28,7 @@ import { Esp32InterruptModal } from './components/Esp32InterruptModal';
 import { ArduinoBootloaderModal } from './components/ArduinoBootloaderModal';
 import { Esp32DmaModal } from './components/Esp32DmaModal';
 import { Esp32I2aModal } from './components/Esp32I2aModal';
+import { PointerStudioModal } from './components/PointerStudioModal';
 import { Esp32ConnectivityModal } from './components/Esp32ConnectivityModal';
 import { AvrWatchpointModal } from './components/AvrWatchpointModal';
 import { AvrStackVisualizerModal } from './components/AvrStackVisualizerModal';
@@ -69,6 +70,7 @@ export default function App() {
   const [isBootloaderModalOpen, setIsBootloaderModalOpen] = useState<boolean>(false);
   const [isEsp32DmaModalOpen, setIsEsp32DmaModalOpen] = useState<boolean>(false);
   const [isEsp32I2aModalOpen, setIsEsp32I2aModalOpen] = useState<boolean>(false);
+  const [isPointerStudioOpen, setIsPointerStudioOpen] = useState(false);
   const [isEsp32ConnectivityModalOpen, setIsEsp32ConnectivityModalOpen] = useState<boolean>(false);
   const [isWatchpointModalOpen, setIsWatchpointModalOpen] = useState<boolean>(false);
   const [isStackVisualizerModalOpen, setIsStackVisualizerModalOpen] = useState<boolean>(false);
@@ -683,6 +685,7 @@ export default function App() {
         onOpenBootloaderModal={() => setIsBootloaderModalOpen(true)}
         onOpenEsp32Dma={() => setIsEsp32DmaModalOpen(true)}
         onOpenEsp32I2a={() => setIsEsp32I2aModalOpen(true)}
+        onOpenPointerStudio={() => setIsPointerStudioOpen(true)}
         onOpenConnectivityModal={() => setIsEsp32ConnectivityModalOpen(true)}
         onOpenWatchpoints={() => setIsWatchpointModalOpen(true)}
         onOpenStackVisualizer={() => setIsStackVisualizerModalOpen(true)}
@@ -1223,6 +1226,16 @@ export default function App() {
           }));
         }}
       />
+
+      {isPointerStudioOpen && (
+        <PointerStudioModal
+          onClose={() => setIsPointerStudioOpen(false)}
+          onInsertBlock={(def, params) => {
+             addBlock(def.type);
+             setIsPointerStudioOpen(false);
+          }}
+        />
+      )}
 
       {/* ESP32 I2A / I2S Audio & High-Speed Interface Management Modal */}
       <Esp32I2aModal

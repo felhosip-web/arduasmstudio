@@ -120,7 +120,10 @@ const DropdownMenu: React.FC<{
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 sm:left-0 sm:right-auto mt-1 w-64 max-h-[80vh] overflow-y-auto bg-[#161920] border border-[#2A2D35] rounded-xs shadow-[4px_4px_0px_#000] z-50 py-1 flex flex-col gap-1 p-1">
+        <div
+          onClickCapture={() => setIsOpen(false)}
+          className="absolute right-0 sm:left-0 sm:right-auto mt-1 w-64 max-h-[80vh] overflow-y-auto bg-[#161920] border border-[#2A2D35] rounded-xs shadow-[4px_4px_0px_#000] z-50 py-1 flex flex-col gap-1 p-1"
+        >
           {children}
         </div>
       )}
@@ -566,13 +569,25 @@ export const Header: React.FC<HeaderProps> = ({
           {onOpenVariableEditor && (
             <button
               onClick={onOpenVariableEditor}
-              className="flex w-full items-center justify-between px-2 py-2 text-xs font-bold hover:bg-[#4ade80]/20 text-[#4ade80] rounded-xs transition-colors text-left"
+              className={`flex w-full items-center justify-between px-2 py-2 text-xs font-bold rounded-xs transition-colors text-left ${
+                hasVariableErrors
+                  ? "bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 animate-pulse"
+                  : "hover:bg-[#4ade80]/20 text-[#4ade80]"
+              }`}
             >
               <div className="flex items-center gap-2">
-                <Code2 className="w-3.5 h-3.5 text-[#4ade80]" /> Változók &
-                Memória
+                <Code2
+                  className={`w-3.5 h-3.5 ${hasVariableErrors ? "text-rose-400" : "text-[#4ade80]"}`}
+                />{" "}
+                Változók & Memória
               </div>
-              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-xs bg-black/60 text-[#4ade80] border border-[#4ade80]/40">
+              <span
+                className={`text-[9px] font-mono px-1.5 py-0.5 rounded-xs border ${
+                  hasVariableErrors
+                    ? "bg-rose-500 text-white border-rose-600"
+                    : "bg-black/60 text-[#4ade80] border-[#4ade80]/40"
+                }`}
+              >
                 {variableCount}
               </span>
             </button>

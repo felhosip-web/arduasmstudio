@@ -231,7 +231,7 @@ export const RenderEngineModal: React.FC<RenderEngineModalProps> = ({
                   <div className="flex items-center gap-2">
                     <Maximize2 className="w-4 h-4 text-[#4ade80]" />
                     <span className="text-xs font-bold text-white uppercase font-mono">
-                      Vizuális Nagyítás & Skálázási Arány (Zoom Level)
+                      Vizuális Nézet Mérete (Skálázás)
                     </span>
                   </div>
                   <span className="text-sm font-mono font-bold text-[#4ade80] bg-black/60 px-2 py-0.5 rounded-xs border border-[#4ade80]/30">

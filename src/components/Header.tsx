@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from "react";
 import {
   Cpu,
   Play,
@@ -24,11 +24,26 @@ import {
   Radio,
   Wifi,
   Layers,
-} from 'lucide-react';
-import { PRESET_PROGRAMS } from '../data/presets';
-import { ProgramBlock, PresetProgram, RenderEngineConfig, VariableDefinition, McuTarget, MCU_TARGETS } from '../types';
-import { getVersionInfo, subscribeToVersionUpdates, incrementBuild, resetBuildCounter, VersionInfo } from '../utils/versionManager';
-import { ToolsMenu } from './ToolsMenu';
+  ChevronDown,
+  Menu,
+} from "lucide-react";
+import { PRESET_PROGRAMS } from "../data/presets";
+import {
+  ProgramBlock,
+  PresetProgram,
+  RenderEngineConfig,
+  VariableDefinition,
+  McuTarget,
+  MCU_TARGETS,
+} from "../types";
+import {
+  getVersionInfo,
+  subscribeToVersionUpdates,
+  incrementBuild,
+  resetBuildCounter,
+  VersionInfo,
+} from "../utils/versionManager";
+import { ToolsMenu } from "./ToolsMenu";
 
 interface HeaderProps {
   blocks: ProgramBlock[];
@@ -69,9 +84,52 @@ interface HeaderProps {
   renderConfig?: RenderEngineConfig;
   targetMcu?: McuTarget;
   onSelectTargetMcu?: (target: McuTarget) => void;
-  activeMainTab?: 'blocks' | 'rtos';
-  onChangeMainTab?: (tab: 'blocks' | 'rtos') => void;
+  activeMainTab?: "blocks" | "rtos";
+  onChangeMainTab?: (tab: "blocks" | "rtos") => void;
 }
+
+const DropdownMenu: React.FC<{
+  label: string;
+  icon: React.ReactNode;
+  badge?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ label, icon, badge, children }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={menuRef} className="relative inline-block text-left select-none">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-[#1A1D24] hover:bg-[#2A2D35] text-[#E0E0E6] border border-[#3A3F4B] hover:border-[#4ade80] rounded-xs shadow-[2px_2px_0px_#000] transition-colors cursor-pointer"
+      >
+        {icon}
+        <span className="hidden sm:inline">{label}</span>
+        {badge}
+        <ChevronDown className="w-3 h-3 opacity-70" />
+      </button>
+
+      {isOpen && (
+        <div
+          onClickCapture={() => setIsOpen(false)}
+          className="absolute right-0 sm:left-0 sm:right-auto mt-1 w-64 max-h-[80vh] overflow-y-auto bg-[#161920] border border-[#2A2D35] rounded-xs shadow-[4px_4px_0px_#000] z-50 py-1 flex flex-col gap-1 p-1"
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const Header: React.FC<HeaderProps> = ({
   blocks,
@@ -109,9 +167,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenReverseEngine,
   onOpenAbiModal,
   renderConfig,
-  targetMcu = 'avr',
+  targetMcu = "avr",
   onSelectTargetMcu,
-  activeMainTab = 'blocks',
+  activeMainTab = "blocks",
   onChangeMainTab,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -119,7 +177,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [showMcuSpecsModal, setShowMcuSpecsModal] = useState(false);
 
-  const isEsp32 = targetMcu === 'esp32';
+  const isEsp32 = targetMcu === "esp32";
   const currentMcuInfo = MCU_TARGETS[targetMcu];
 
   useEffect(() => {
@@ -129,18 +187,23 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   const handleExportJson = () => {
-    const updatedVer = incrementBuild('JSON Projekt Mentése');
+    const updatedVer = incrementBuild("JSON Projekt Mentése");
     const exportPayload = {
-      app: 'ArduASM Studio',
+      app: "ArduASM Studio",
       version: updatedVer.semver,
       buildNumber: updatedVer.buildNumber,
       exportedAt: new Date().toISOString(),
       blocks,
     };
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `ardu_asm_v${updatedVer.semver}_b${updatedVer.buildNumber}_${Date.now()}.json`);
+    const dataStr =
+      "data:text/json;charset=utf-8," +
+      encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute(
+      "download",
+      `ardu_asm_v${updatedVer.semver}_b${updatedVer.buildNumber}_${Date.now()}.json`,
+    );
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -149,19 +212,19 @@ export const Header: React.FC<HeaderProps> = ({
   const handleImportJson = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileReader = new FileReader();
     if (e.target.files && e.target.files[0]) {
-      fileReader.readAsText(e.target.files[0], 'UTF-8');
+      fileReader.readAsText(e.target.files[0], "UTF-8");
       fileReader.onload = (event) => {
         try {
           const parsed = JSON.parse(event.target?.result as string);
           if (Array.isArray(parsed)) {
             setBlocks(parsed);
-            incrementBuild('Projekt JSON betöltve');
+            incrementBuild("Projekt JSON betöltve");
           } else if (parsed && Array.isArray(parsed.blocks)) {
             setBlocks(parsed.blocks);
-            incrementBuild('Strukturált projekt betöltve');
+            incrementBuild("Strukturált projekt betöltve");
           }
         } catch (err) {
-          alert('Érvénytelen projekt JSON fájl!');
+          alert("Érvénytelen projekt JSON fájl!");
         }
       };
     }
@@ -176,17 +239,21 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-3">
         <div
           className={`w-8 h-8 flex items-center justify-center rounded-xs text-black font-extrabold font-mono text-base shadow-[2px_2px_0px_#000] transition-colors ${
-            isEsp32 ? 'bg-[#38bdf8]' : 'bg-[#4ade80]'
+            isEsp32 ? "bg-[#38bdf8]" : "bg-[#4ade80]"
           }`}
         >
-          {isEsp32 ? 'E' : 'A'}
+          {isEsp32 ? "E" : "A"}
         </div>
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-bold text-sm sm:text-base tracking-tight uppercase text-white flex items-center gap-1">
-              <span>{isEsp32 ? 'ESP32' : 'Ardu'}</span>
-              <span className={isEsp32 ? 'text-[#38bdf8]' : 'text-[#4ade80]'}>ASM</span>
-              <span className="text-[#8A8D98] font-normal text-xs sm:text-sm">Studio</span>
+              <span>{isEsp32 ? "ESP32" : "Ardu"}</span>
+              <span className={isEsp32 ? "text-[#38bdf8]" : "text-[#4ade80]"}>
+                ASM
+              </span>
+              <span className="text-[#8A8D98] font-normal text-xs sm:text-sm">
+                Studio
+              </span>
             </h1>
 
             {/* Architecture Selector: AVR vs ESP32 */}
@@ -198,14 +265,14 @@ export const Header: React.FC<HeaderProps> = ({
                 id="select-arch-avr"
                 onClick={() => {
                   if (onSelectTargetMcu) {
-                    onSelectTargetMcu('avr');
-                    incrementBuild('Architektúra váltás: AVR ATmega328P');
+                    onSelectTargetMcu("avr");
+                    incrementBuild("Architektúra váltás: AVR ATmega328P");
                   }
                 }}
                 className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded-xs transition-all flex items-center gap-1 ${
                   !isEsp32
-                    ? 'bg-[#4ade80] text-black shadow-[1px_1px_0px_#000]'
-                    : 'text-[#8A8D98] hover:text-[#E0E0E6] hover:bg-[#1A1D24]'
+                    ? "bg-[#4ade80] text-black shadow-[1px_1px_0px_#000]"
+                    : "text-[#8A8D98] hover:text-[#E0E0E6] hover:bg-[#1A1D24]"
                 }`}
                 title="8-bit AVR RISC (ATmega328P @ 16 MHz)"
               >
@@ -217,14 +284,16 @@ export const Header: React.FC<HeaderProps> = ({
                 id="select-arch-esp32"
                 onClick={() => {
                   if (onSelectTargetMcu) {
-                    onSelectTargetMcu('esp32');
-                    incrementBuild('Architektúra váltás: ESP32 Xtensa Dual-Core');
+                    onSelectTargetMcu("esp32");
+                    incrementBuild(
+                      "Architektúra váltás: ESP32 Xtensa Dual-Core",
+                    );
                   }
                 }}
                 className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded-xs transition-all flex items-center gap-1 ${
                   isEsp32
-                    ? 'bg-[#38bdf8] text-black shadow-[1px_1px_0px_#000]'
-                    : 'text-[#8A8D98] hover:text-[#E0E0E6] hover:bg-[#1A1D24]'
+                    ? "bg-[#38bdf8] text-black shadow-[1px_1px_0px_#000]"
+                    : "text-[#8A8D98] hover:text-[#E0E0E6] hover:bg-[#1A1D24]"
                 }`}
                 title="32-bit Xtensa Dual-Core (ESP32 @ 240 MHz)"
               >
@@ -240,11 +309,11 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <button
                 id="tab-btn-blocks"
-                onClick={() => onChangeMainTab && onChangeMainTab('blocks')}
+                onClick={() => onChangeMainTab && onChangeMainTab("blocks")}
                 className={`px-2.5 py-1 text-xs font-mono font-bold rounded-xs transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeMainTab === 'blocks'
-                    ? 'bg-[#4ade80] text-black shadow-[1px_1px_0px_#000]'
-                    : 'text-slate-400 hover:text-white hover:bg-[#1A1D24]'
+                  activeMainTab === "blocks"
+                    ? "bg-[#4ade80] text-black shadow-[1px_1px_0px_#000]"
+                    : "text-slate-400 hover:text-white hover:bg-[#1A1D24]"
                 }`}
               >
                 <span>🧩 Blokkszerkesztő</span>
@@ -254,21 +323,23 @@ export const Header: React.FC<HeaderProps> = ({
                 id="tab-btn-rtos"
                 onClick={() => {
                   if (onChangeMainTab) {
-                    onChangeMainTab('rtos');
-                    if (onSelectTargetMcu && targetMcu !== 'esp32') {
-                      onSelectTargetMcu('esp32');
+                    onChangeMainTab("rtos");
+                    if (onSelectTargetMcu && targetMcu !== "esp32") {
+                      onSelectTargetMcu("esp32");
                     }
                   }
                 }}
                 className={`px-2.5 py-1 text-xs font-mono font-bold rounded-xs transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeMainTab === 'rtos'
-                    ? 'bg-[#38bdf8] text-black shadow-[1px_1px_0px_#000]'
-                    : 'text-cyan-400 hover:text-white hover:bg-cyan-950/40'
+                  activeMainTab === "rtos"
+                    ? "bg-[#38bdf8] text-black shadow-[1px_1px_0px_#000]"
+                    : "text-cyan-400 hover:text-white hover:bg-cyan-950/40"
                 }`}
               >
                 <Cpu className="w-3.5 h-3.5" />
                 <span>🚀 FreeRTOS Kétmagos Szerkesztő</span>
-                <span className="text-[9px] bg-cyan-950 text-cyan-300 px-1 rounded border border-cyan-700">D&D + Linter</span>
+                <span className="text-[9px] bg-cyan-950 text-cyan-300 px-1 rounded border border-cyan-700">
+                  D&D + Linter
+                </span>
               </button>
             </div>
 
@@ -278,8 +349,8 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setShowMcuSpecsModal(true)}
               className={`px-2 py-0.5 text-[10px] font-mono font-bold bg-[#1A1D24] border rounded-xs shadow-[1px_1px_0px_#000] flex items-center gap-1 transition-colors cursor-pointer ${
                 isEsp32
-                  ? 'text-sky-400 border-sky-500/40 hover:bg-sky-950/50'
-                  : 'text-[#4ade80] border-[#3A3F4B] hover:border-[#4ade80]'
+                  ? "text-sky-400 border-sky-500/40 hover:bg-sky-950/50"
+                  : "text-[#4ade80] border-[#3A3F4B] hover:border-[#4ade80]"
               }`}
               title="Mikrokontroller Hardver Specifikációk megtekintése"
             >
@@ -300,8 +371,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <p className="text-[11px] text-[#8A8D98] hidden sm:block">
             {isEsp32
-              ? 'ESP32 Xtensa LX6 Kétmagos 240 MHz • FreeRTOS & Direct Register ASM'
-              : 'Moduláris Drag & Drop Vizuális Programozás • Óraciklus-pontos Assembly & C'}
+              ? "ESP32 Xtensa LX6 Kétmagos 240 MHz • FreeRTOS & Direct Register ASM"
+              : "Moduláris Drag & Drop Vizuális Programozás • Óraciklus-pontos Assembly & C"}
           </p>
         </div>
       </div>
@@ -315,11 +386,13 @@ export const Header: React.FC<HeaderProps> = ({
             className="pl-8 pr-3 py-1.5 bg-[#1A1D24] border border-[#3A3F4B] hover:border-[#4ade80] text-xs text-[#E0E0E6] rounded-xs focus:outline-none focus:border-[#4ade80] transition-colors cursor-pointer shadow-[2px_2px_0px_#000]"
             defaultValue=""
             onChange={(e) => {
-              const selected = PRESET_PROGRAMS.find((p) => p.id === e.target.value);
+              const selected = PRESET_PROGRAMS.find(
+                (p) => p.id === e.target.value,
+              );
               if (selected) {
                 onLoadPreset(selected);
                 incrementBuild(`Mintaprojekt betöltve: ${selected.title}`);
-                e.target.value = '';
+                e.target.value = "";
               }
             }}
           >
@@ -327,7 +400,11 @@ export const Header: React.FC<HeaderProps> = ({
               ⚡ Mintaprojektek betöltése...
             </option>
             {PRESET_PROGRAMS.map((preset) => (
-              <option key={preset.id} value={preset.id} className="bg-[#1A1D24] text-[#E0E0E6]">
+              <option
+                key={preset.id}
+                value={preset.id}
+                className="bg-[#1A1D24] text-[#E0E0E6]"
+              >
                 {preset.title} ({preset.difficulty})
               </option>
             ))}
@@ -341,10 +418,10 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onToggleRun}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-xs text-xs font-bold transition-all shadow-[1px_1px_0px_#000] ${
               isRunning
-                ? 'bg-amber-500 hover:bg-amber-400 text-black'
-                : 'bg-[#4ade80] hover:bg-[#3ec973] text-black'
+                ? "bg-amber-500 hover:bg-amber-400 text-black"
+                : "bg-[#4ade80] hover:bg-[#3ec973] text-black"
             }`}
-            title={isRunning ? 'Szimuláció leállítása' : 'Szimuláció indítása'}
+            title={isRunning ? "Szimuláció leállítása" : "Szimuláció indítása"}
           >
             {isRunning ? (
               <>
@@ -409,232 +486,194 @@ export const Header: React.FC<HeaderProps> = ({
           />
         )}
 
-        {/* ESP32 Quick Direct Access Buttons */}
-        {isEsp32 && onOpenEsp32Interrupts && (
-          <button
-            id="btn-header-esp32-interrupts"
-            type="button"
-            onClick={onOpenEsp32Interrupts}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-500/60 rounded-xs shadow-[2px_2px_0px_#000] transition-colors cursor-pointer"
-            title="ESP32 Kétmagos Megszakítás Mátrix & ISR Tervező (Xtensa Dual-Core, 32 Forrás, IRAM_ATTR)"
-          >
-            <Zap className="w-3.5 h-3.5 text-sky-400" />
-            <span className="hidden lg:inline">Megszakítások</span>
-            <span className="inline lg:hidden">ISR</span>
-          </button>
-        )}
+        {/* ADDITIONAL MENUS FOR MOBILE FRIENDLINESS */}
+        <DropdownMenu
+          label="Funkciók & Memória"
+          icon={<Layers className="w-3.5 h-3.5 text-indigo-400" />}
+        >
+          {isEsp32 && onOpenEsp32Interrupts && (
+            <button
+              onClick={onOpenEsp32Interrupts}
+              className="flex w-full items-center gap-2 px-2 py-2 text-xs font-bold hover:bg-sky-900 text-sky-300 rounded-xs transition-colors text-left"
+            >
+              <Zap className="w-3.5 h-3.5 text-sky-400" /> ESP32 Megszakítások
+            </button>
+          )}
 
-        {isEsp32 && onOpenConnectivityModal && (
-          <button
-            id="btn-header-esp32-connectivity"
-            type="button"
-            onClick={onOpenConnectivityModal}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/60 rounded-xs shadow-[2px_2px_0px_#000] transition-colors cursor-pointer"
-            title="ESP32 Hálózati & Vezeték Nélküli Kapcsolatkezelő (WiFi SSID, Statikus IP, BLE Advertising)"
-          >
-            <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden lg:inline">WiFi / BLE</span>
-            <span className="inline lg:hidden">WiFi</span>
-          </button>
-        )}
+          {isEsp32 && onOpenConnectivityModal && (
+            <button
+              onClick={onOpenConnectivityModal}
+              className="flex w-full items-center gap-2 px-2 py-2 text-xs font-bold hover:bg-[#3ec973]/20 text-[#4ade80] rounded-xs transition-colors text-left"
+            >
+              <Wifi className="w-3.5 h-3.5 text-[#4ade80]" /> WiFi & Bluetooth
+              (BLE)
+            </button>
+          )}
 
-        {isEsp32 && onOpenEsp32Dma && (
-          <button
-            id="btn-header-esp32-dma"
-            type="button"
-            onClick={onOpenEsp32Dma}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/60 rounded-xs shadow-[2px_2px_0px_#000] transition-colors cursor-pointer"
-            title="ESP32 DMA Controller & Körkörös Puffer Menedzsment"
-          >
-            <Zap className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden lg:inline">DMA Menedzser</span>
-            <span className="inline lg:hidden">DMA</span>
-          </button>
-        )}
+          {isEsp32 && onOpenEsp32Dma && (
+            <button
+              onClick={onOpenEsp32Dma}
+              className="flex w-full items-center gap-2 px-2 py-2 text-xs font-bold hover:bg-cyan-900 text-cyan-300 rounded-xs transition-colors text-left"
+            >
+              <Zap className="w-3.5 h-3.5 text-cyan-400" /> DMA Menedzser
+            </button>
+          )}
 
-        {isEsp32 && onOpenEsp32I2a && (
-          <button
-            id="btn-header-esp32-i2a"
-            type="button"
-            onClick={onOpenEsp32I2a}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-500/60 rounded-xs shadow-[2px_2px_0px_#000] transition-colors cursor-pointer"
-            title="ESP32 I2A / I2S Audio & Spektrumanalizátor Menedzsment"
-          >
-            <Radio className="w-3.5 h-3.5 text-purple-400" />
-            <span className="hidden lg:inline">I2A / I2S Audio</span>
-            <span className="inline lg:hidden">I2A</span>
-          </button>
-        )}
+          {isEsp32 && onOpenEsp32I2a && (
+            <button
+              onClick={onOpenEsp32I2a}
+              className="flex w-full items-center gap-2 px-2 py-2 text-xs font-bold hover:bg-purple-900 text-purple-300 rounded-xs transition-colors text-left"
+            >
+              <Radio className="w-3.5 h-3.5 text-purple-400" /> I2A / I2S Audio
+            </button>
+          )}
 
-        {/* AVR Quick Direct Access Buttons: Bootloader Studio & Fuses */}
-        {onOpenBootloaderModal && !isEsp32 && (
-          <button
-            id="btn-open-arduino-bootloader"
-            onClick={onOpenBootloaderModal}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-amber-950/80 hover:bg-amber-900/90 text-amber-300 border border-amber-500/60 rounded-xs shadow-[2px_2px_0px_#000] transition-colors cursor-pointer"
-            title="Arduino Vizuális Bootloader Stúdió (Optiboot, Flash Partíciók, UART Szinkron & HEX Generálás)"
-          >
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden lg:inline">Bootloader</span>
-            <span className="inline lg:hidden">Boot</span>
-          </button>
-        )}
+          {onOpenBootloaderModal && !isEsp32 && (
+            <button
+              onClick={onOpenBootloaderModal}
+              className="flex w-full items-center gap-2 px-2 py-2 text-xs font-bold hover:bg-amber-900/90 text-amber-300 rounded-xs transition-colors text-left"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-400" /> Bootloader Stúdió
+            </button>
+          )}
 
-        {onOpenAvrFuses && !isEsp32 && (
-          <button
-            id="btn-open-avr-fuses"
-            onClick={onOpenAvrFuses}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-emerald-950/70 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/60 rounded-xs shadow-[2px_2px_0px_#000] transition-colors cursor-pointer"
-            title="AVR ATmega328P Hardveres FUSE & Lock Bitek Szerkesztője (Órajel, BOD, Bootloader, ISP)"
-          >
-            <Flame className="w-3.5 h-3.5 text-[#4ade80]" />
-            <span className="hidden lg:inline">FUSE Bitek</span>
-            <span className="inline lg:hidden">FUSE</span>
-          </button>
-        )}
+          {onOpenAvrFuses && !isEsp32 && (
+            <button
+              onClick={onOpenAvrFuses}
+              className="flex w-full items-center gap-2 px-2 py-2 text-xs font-bold hover:bg-emerald-900/80 text-emerald-300 rounded-xs transition-colors text-left"
+            >
+              <Flame className="w-3.5 h-3.5 text-[#4ade80]" /> FUSE Bitek
+            </button>
+          )}
 
-        {onOpenAvrInterrupts && !isEsp32 && (
-          <button
-            id="btn-open-avr-interrupts"
-            onClick={onOpenAvrInterrupts}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-purple-950/70 hover:bg-purple-900/80 text-purple-300 border border-purple-500/60 rounded-xs shadow-[2px_2px_0px_#000] transition-colors cursor-pointer"
-            title="AVR Vizuális Megszakítás Tervező (INT0/INT1, Timer CTC, PCINT, Vektortábla & Szimuláció)"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span className="hidden lg:inline">Megszakítások</span>
-            <span className="inline lg:hidden">ISR</span>
-          </button>
-        )}
+          {onOpenAvrInterrupts && !isEsp32 && (
+            <button
+              onClick={onOpenAvrInterrupts}
+              className="flex w-full items-center gap-2 px-2 py-2 text-xs font-bold hover:bg-purple-900/80 text-purple-300 rounded-xs transition-colors text-left"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-purple-400" /> Megszakítások
+              (ISR)
+            </button>
+          )}
 
-        {onOpenStateMachine && (
-          <button
-            id="btn-open-state-machine"
-            onClick={onOpenStateMachine}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-500/60 rounded-xs shadow-[2px_2px_0px_#000] transition-colors cursor-pointer"
-            title="Vizuális Állapotgép (FSM) Tervező & Szimulátor (Diagram, Eseményinjektálás, Párhuzamos ASM & C Kód)"
-          >
-            <Layers className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden lg:inline">Állapotgép (FSM)</span>
-            <span className="inline lg:hidden">FSM</span>
-          </button>
-        )}
+          {onOpenStateMachine && (
+            <button
+              onClick={onOpenStateMachine}
+              className="flex w-full items-center gap-2 px-2 py-2 text-xs font-bold hover:bg-indigo-900 text-indigo-300 rounded-xs transition-colors text-left"
+            >
+              <Layers className="w-3.5 h-3.5 text-indigo-400" /> Állapotgép
+              (FSM)
+            </button>
+          )}
 
-        {onOpenReverseEngine && (
-          <button
-            id="btn-open-reverse-engine"
-            onClick={onOpenReverseEngine}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-[#1A1D24] hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 hover:border-cyan-400 rounded-xs shadow-[2px_2px_0px_#000] transition-all cursor-pointer"
-            title="Kétirányú Visszafejtő (Assembly ➔ Blokkok, Intel HEX Disassembler, PlatformIO/Arduino ZIP Export)"
-          >
-            <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden xl:inline">Visszafejtő & ZIP Export</span>
-            <span className="inline xl:hidden">Visszafejtő</span>
-          </button>
-        )}
-
-        {onOpenAbiModal && (
-          <button
-            onClick={onOpenAbiModal}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-[#1A1D24] hover:bg-pink-500/20 text-pink-400 border border-pink-500/40 hover:border-pink-400 rounded-xs shadow-[2px_2px_0px_#000] transition-all cursor-pointer"
-            title="Dinamikus C++ Header & ASM Blokk Generátor"
-          >
-            <Code className="w-3.5 h-3.5 text-pink-400" />
-            <span className="hidden xl:inline">C-Assembly ABI</span>
-          </button>
-        )}
-
-        {onOpenRenderEngine && (
-          <button
-            id="btn-open-render-engine"
-            onClick={onOpenRenderEngine}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-[#1A1D24] hover:bg-[#4ade80]/20 text-[#4ade80] border border-[#4ade80]/50 hover:border-[#4ade80] rounded-xs shadow-[2px_2px_0px_#000] transition-all cursor-pointer"
-            title="Render Motor & Mini-OS Rendszerbeállítások (Skálázás, Pipeline, Shaders, Telemetria)"
-          >
-            <Sliders className="w-3.5 h-3.5 text-[#4ade80]" />
-            <span className="hidden xl:inline">Render Motor & Mini-OS</span>
-            <span className="inline xl:hidden">Motor</span>
-            {renderConfig && (
-              <span className="text-[9px] font-mono bg-black/60 px-1 py-0.2 rounded-xs border border-[#4ade80]/30 text-white font-normal">
-                {Math.round((renderConfig.zoomLevel || 1) * 100)}%
-              </span>
-            )}
-          </button>
-        )}
-
-        {onOpenVariableEditor && (
-          <button
-            id="btn-open-variable-editor"
-            onClick={onOpenVariableEditor}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold rounded-xs shadow-[2px_2px_0px_#000] transition-colors cursor-pointer border ${
-              hasVariableErrors
-                ? 'bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border-rose-500/80 shadow-[0_0_10px_rgba(244,63,94,0.3)] animate-pulse'
-                : 'bg-[#1A1D24] hover:bg-[#4ade80]/20 text-[#4ade80] border-[#4ade80]/60 hover:border-[#4ade80]'
-            }`}
-            title="Globális C / AVR Assembly Változók, Memória Allokáció és Validáció"
-          >
-            <Code2 className={`w-3.5 h-3.5 ${hasVariableErrors ? 'text-rose-400' : 'text-[#4ade80]'}`} />
-            <span className="hidden lg:inline">Változók & Memória</span>
-            <span className="inline lg:hidden">Változók</span>
-            <span
-              className={`text-[9px] font-mono px-1 py-0.2 rounded-xs border font-bold ${
+          {onOpenVariableEditor && (
+            <button
+              onClick={onOpenVariableEditor}
+              className={`flex w-full items-center justify-between px-2 py-2 text-xs font-bold rounded-xs transition-colors text-left ${
                 hasVariableErrors
-                  ? 'bg-rose-500 text-white border-rose-600'
-                  : 'bg-black/60 text-[#4ade80] border-[#4ade80]/40'
+                  ? "bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 animate-pulse"
+                  : "hover:bg-[#4ade80]/20 text-[#4ade80]"
               }`}
             >
-              {variableCount}
-            </span>
-          </button>
-        )}
+              <div className="flex items-center gap-2">
+                <Code2
+                  className={`w-3.5 h-3.5 ${hasVariableErrors ? "text-rose-400" : "text-[#4ade80]"}`}
+                />{" "}
+                Változók & Memória
+              </div>
+              <span
+                className={`text-[9px] font-mono px-1.5 py-0.5 rounded-xs border ${
+                  hasVariableErrors
+                    ? "bg-rose-500 text-white border-rose-600"
+                    : "bg-black/60 text-[#4ade80] border-[#4ade80]/40"
+                }`}
+              >
+                {variableCount}
+              </span>
+            </button>
+          )}
 
-        {onOpenMemoryEditor && (
+          {onOpenMemoryEditor && (
+            <button
+              onClick={onOpenMemoryEditor}
+              className="flex w-full items-center gap-2 px-2 py-2 text-xs font-bold hover:bg-amber-500/30 text-amber-300 rounded-xs transition-colors text-left"
+            >
+              <HardDrive className="w-3.5 h-3.5 text-amber-400" /> EEPROM &
+              Flash
+            </button>
+          )}
+        </DropdownMenu>
+
+        <DropdownMenu
+          label="Beállítások & Fájl"
+          icon={<Settings className="w-3.5 h-3.5 text-white" />}
+        >
+          {onOpenRenderEngine && (
+            <button
+              onClick={onOpenRenderEngine}
+              className="flex w-full items-center justify-between px-2 py-2 text-xs font-bold hover:bg-[#4ade80]/20 text-[#4ade80] rounded-xs transition-all text-left"
+            >
+              <div className="flex items-center gap-2">
+                <Sliders className="w-3.5 h-3.5 text-[#4ade80]" /> Render &
+                Mini-OS
+              </div>
+              {renderConfig && (
+                <span className="text-[9px] font-mono bg-black/60 px-1 py-0.5 rounded-xs text-white">
+                  {Math.round((renderConfig.zoomLevel || 1) * 100)}%
+                </span>
+              )}
+            </button>
+          )}
+
+          {onOpenReverseEngine && (
+            <button
+              onClick={onOpenReverseEngine}
+              className="flex w-full items-center gap-2 px-2 py-2 text-xs font-bold hover:bg-cyan-500/20 text-cyan-400 rounded-xs transition-all text-left"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-cyan-400" /> Visszafejtő &
+              Export
+            </button>
+          )}
+
+          {onOpenAbiModal && (
+            <button
+              onClick={onOpenAbiModal}
+              className="flex w-full items-center gap-2 px-2 py-2 text-xs font-bold hover:bg-pink-500/20 text-pink-400 rounded-xs transition-all text-left"
+            >
+              <Code className="w-3.5 h-3.5 text-pink-400" /> C-Assembly ABI
+            </button>
+          )}
+
           <button
-            id="btn-open-memory-editor"
-            onClick={onOpenMemoryEditor}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xs shadow-[2px_2px_0px_#000] transition-colors"
-            title="Arduino 1024B EEPROM & 32KB Flash Memória Hex/Dec/Bin Szerkesztő"
+            onClick={onOpenGuide}
+            className="flex w-full items-center gap-2 px-2 py-2 text-xs font-medium hover:bg-[#3A3F4B] text-[#E0E0E6] rounded-xs transition-colors text-left"
           >
-            <HardDrive className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden lg:inline">EEPROM & Flash Szerkesztő</span>
-            <span className="inline lg:hidden">EEPROM</span>
+            <BookOpen className="w-3.5 h-3.5" /> Időzítés Kisokos
           </button>
-        )}
 
-        <button
-          id="btn-open-timing-guide"
-          onClick={onOpenGuide}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-[#1A1D24] hover:border-[#4ade80] text-[#4ade80] border border-[#3A3F4B] rounded-xs shadow-[2px_2px_0px_#000] transition-colors"
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Időzítés Kisokos</span>
-        </button>
+          <div className="h-px bg-[#2A2D35] my-1 w-full" />
 
-        <button
-          id="btn-export-project-json"
-          onClick={handleExportJson}
-          className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium bg-[#1A1D24] hover:border-[#4ade80] text-[#E0E0E6] border border-[#3A3F4B] rounded-xs shadow-[2px_2px_0px_#000] transition-colors"
-          title="Projekt mentése (.json)"
-        >
-          <Download className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">Mentés</span>
-        </button>
+          <button
+            onClick={handleExportJson}
+            className="flex w-full items-center gap-2 px-2 py-2 text-xs font-medium hover:bg-[#3A3F4B] text-[#E0E0E6] rounded-xs transition-colors text-left"
+          >
+            <Download className="w-3.5 h-3.5" /> Projekt Mentése
+          </button>
 
-        <button
-          id="btn-import-project-json"
-          onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium bg-[#1A1D24] hover:border-[#4ade80] text-[#E0E0E6] border border-[#3A3F4B] rounded-xs shadow-[2px_2px_0px_#000] transition-colors"
-          title="Projekt betöltése (.json)"
-        >
-          <Upload className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">Betöltés</span>
-        </button>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleImportJson}
-          accept=".json"
-          className="hidden"
-        />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex w-full items-center gap-2 px-2 py-2 text-xs font-medium hover:bg-[#3A3F4B] text-[#E0E0E6] rounded-xs transition-colors text-left"
+          >
+            <Upload className="w-3.5 h-3.5" /> Projekt Betöltése
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImportJson}
+            accept=".json"
+            className="hidden"
+          />
+        </DropdownMenu>
       </div>
 
       {/* Version Information Modal */}
@@ -666,7 +705,9 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-[#8A8D98]">Inkrementált Build Szám:</span>
+                  <span className="text-[#8A8D98]">
+                    Inkrementált Build Szám:
+                  </span>
                   <span className="text-[#4ade80] font-bold">
                     Build #{versionInfo.buildNumber}
                   </span>
@@ -680,7 +721,9 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-[#8A8D98]">Összes projekt művelet:</span>
+                  <span className="text-[#8A8D98]">
+                    Összes projekt művelet:
+                  </span>
                   <span className="text-amber-400 font-bold">
                     {versionInfo.totalEdits} művelet
                   </span>
@@ -688,7 +731,9 @@ export const Header: React.FC<HeaderProps> = ({
 
                 <div className="flex justify-between items-center">
                   <span className="text-[#8A8D98]">Utolsó frissítés:</span>
-                  <span className="text-[#E0E0E6]">{versionInfo.lastUpdated}</span>
+                  <span className="text-[#E0E0E6]">
+                    {versionInfo.lastUpdated}
+                  </span>
                 </div>
               </div>
 
@@ -700,10 +745,19 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                   <div className="bg-[#0F1115] border border-[#2A2D35] rounded-xs p-2 max-h-28 overflow-y-auto space-y-1 text-[10px] custom-scrollbar">
                     {versionInfo.buildLogs.map((log) => (
-                      <div key={log.id} className="flex items-center justify-between text-[#8A8D98]">
-                        <span className="text-[#4ade80] font-bold">#{log.buildNumber}</span>
-                        <span className="text-[#E0E0E6] truncate max-w-[200px]">{log.reason}</span>
-                        <span className="text-[9px] text-[#8A8D98]">{log.timestamp}</span>
+                      <div
+                        key={log.id}
+                        className="flex items-center justify-between text-[#8A8D98]"
+                      >
+                        <span className="text-[#4ade80] font-bold">
+                          #{log.buildNumber}
+                        </span>
+                        <span className="text-[#E0E0E6] truncate max-w-[200px]">
+                          {log.reason}
+                        </span>
+                        <span className="text-[9px] text-[#8A8D98]">
+                          {log.timestamp}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -713,7 +767,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-1.5">
                   <button
-                    onClick={() => incrementBuild('Kézi build inkrementálás')}
+                    onClick={() => incrementBuild("Kézi build inkrementálás")}
                     className="px-2.5 py-1 bg-[#1A1D24] hover:bg-[#2A2D35] text-[#4ade80] border border-[#3A3F4B] hover:border-[#4ade80] rounded-xs text-[10px] font-bold cursor-pointer transition-colors"
                   >
                     +1 Build Növelés
@@ -746,7 +800,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center gap-2">
                 <div
                   className={`w-8 h-8 rounded-xs flex items-center justify-center text-black font-extrabold shadow-[2px_2px_0px_#000] ${
-                    isEsp32 ? 'bg-[#38bdf8]' : 'bg-[#4ade80]'
+                    isEsp32 ? "bg-[#38bdf8]" : "bg-[#4ade80]"
                   }`}
                 >
                   <Cpu className="w-5 h-5" />
@@ -755,7 +809,9 @@ export const Header: React.FC<HeaderProps> = ({
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider">
                     {currentMcuInfo.name} ({currentMcuInfo.chipName})
                   </h3>
-                  <p className="text-xs text-[#8A8D98]">{currentMcuInfo.arch}</p>
+                  <p className="text-xs text-[#8A8D98]">
+                    {currentMcuInfo.arch}
+                  </p>
                 </div>
               </div>
               <button
@@ -768,41 +824,60 @@ export const Header: React.FC<HeaderProps> = ({
 
             <div className="grid grid-cols-2 gap-2 text-xs font-mono">
               <div className="bg-[#0F1115] p-2.5 rounded-xs border border-[#2A2D35]">
-                <div className="text-[10px] text-[#8A8D98] uppercase">Órajel & Ciklusidő</div>
+                <div className="text-[10px] text-[#8A8D98] uppercase">
+                  Órajel & Ciklusidő
+                </div>
                 <div className="text-[#4ade80] font-bold text-sm">
-                  {currentMcuInfo.clockMhz} MHz ({currentMcuInfo.cycleNs.toFixed(2)} ns/ciklus)
+                  {currentMcuInfo.clockMhz} MHz (
+                  {currentMcuInfo.cycleNs.toFixed(2)} ns/ciklus)
                 </div>
               </div>
 
               <div className="bg-[#0F1115] p-2.5 rounded-xs border border-[#2A2D35]">
-                <div className="text-[10px] text-[#8A8D98] uppercase">CPU Magok Száma</div>
+                <div className="text-[10px] text-[#8A8D98] uppercase">
+                  CPU Magok Száma
+                </div>
                 <div className="text-sky-400 font-bold text-sm">
-                  {currentMcuInfo.cores} Mag {isEsp32 ? '(PRO + APP CPU)' : '(Egyetlen Mag)'}
+                  {currentMcuInfo.cores} Mag{" "}
+                  {isEsp32 ? "(PRO + APP CPU)" : "(Egyetlen Mag)"}
                 </div>
               </div>
 
               <div className="bg-[#0F1115] p-2.5 rounded-xs border border-[#2A2D35]">
-                <div className="text-[10px] text-[#8A8D98] uppercase">Flash Memória</div>
+                <div className="text-[10px] text-[#8A8D98] uppercase">
+                  Flash Memória
+                </div>
                 <div className="text-amber-400 font-bold">
-                  {(currentMcuInfo.flashBytes / 1024).toLocaleString()} KB {isEsp32 ? '(4 MB SPI)' : ''}
+                  {(currentMcuInfo.flashBytes / 1024).toLocaleString()} KB{" "}
+                  {isEsp32 ? "(4 MB SPI)" : ""}
                 </div>
               </div>
 
               <div className="bg-[#0F1115] p-2.5 rounded-xs border border-[#2A2D35]">
-                <div className="text-[10px] text-[#8A8D98] uppercase">SRAM Memória</div>
+                <div className="text-[10px] text-[#8A8D98] uppercase">
+                  SRAM Memória
+                </div>
                 <div className="text-purple-400 font-bold">
                   {(currentMcuInfo.sramBytes / 1024).toFixed(1)} KB
                 </div>
               </div>
 
               <div className="bg-[#0F1115] p-2.5 rounded-xs border border-[#2A2D35]">
-                <div className="text-[10px] text-[#8A8D98] uppercase">Tápfeszültség & Logika</div>
-                <div className="text-emerald-400 font-bold">{currentMcuInfo.voltageV} V</div>
+                <div className="text-[10px] text-[#8A8D98] uppercase">
+                  Tápfeszültség & Logika
+                </div>
+                <div className="text-emerald-400 font-bold">
+                  {currentMcuInfo.voltageV} V
+                </div>
               </div>
 
               <div className="bg-[#0F1115] p-2.5 rounded-xs border border-[#2A2D35]">
-                <div className="text-[10px] text-[#8A8D98] uppercase">Alapértelmezett Baud</div>
-                <div className="text-rose-400 font-bold">{currentMcuInfo.defaultBaud} bps</div>
+                <div className="text-[10px] text-[#8A8D98] uppercase">
+                  Alapértelmezett Baud
+                </div>
+                <div className="text-rose-400 font-bold">
+                  {currentMcuInfo.defaultBaud} bps
+                </div>
               </div>
             </div>
 
